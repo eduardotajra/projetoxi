@@ -1396,10 +1396,30 @@ function tPrint(text,cls){
   o.scrollTop=o.scrollHeight;
 }
 
+const termHistory=[];
+let termHistIdx=-1;
+
 $('termCmd').addEventListener('keydown',function(e){
+  if(e.key==='ArrowUp'){
+    e.preventDefault();
+    if(termHistIdx<termHistory.length-1){
+      termHistIdx++;
+      this.value=termHistory[termHistIdx];
+      setTimeout(()=>this.setSelectionRange(this.value.length,this.value.length),0);
+    }
+    return;
+  }
+  if(e.key==='ArrowDown'){
+    e.preventDefault();
+    if(termHistIdx>0){ termHistIdx--; this.value=termHistory[termHistIdx]; }
+    else{ termHistIdx=-1; this.value=''; }
+    return;
+  }
   if(e.key!=='Enter') return;
   const raw=this.value.trim();
   if(!raw) return;
+  termHistory.unshift(raw);
+  termHistIdx=-1;
   const inp=document.createElement('div');
   inp.className='tl inp';
   inp.textContent='atlas@ix:~$ '+raw;
