@@ -3,377 +3,388 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ATLAS · ARQUIVO · IX</title>
+<title>ATLAS OS · v0.9 [BETA]</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:   #040302;
-  --g0:   #0a1408;
-  --g1:   #1c3a12;
-  --g2:   #3a7228;
-  --g3:   #56a03c;
-  --g4:   #7acc58;
-  --red:  #7e1419;
-  --redb: #c0202a;
-  --amb:  #b06820;
-  --pap:  #ede0c4;
-  --papd: #1a0e06;
+  --desk:  #0d1117;
+  --wb:    #161b22;
+  --wbr:   #21262d;
+  --wba:   #1c2d4a;
+  --br:    #30363d;
+  --acc:   #388bfd;
+  --accbr: #58a6ff;
+  --tx:    #c9d1d9;
+  --dim:   #8b949e;
+  --red:   #8b2020;
+  --redbr: #c0202a;
+  --amb:   #b07820;
+  --green: #238636;
+  --gbr:   #3fb950;
+  --pap:   #ede0c4;
+  --papd:  #1a0e06;
+  --scan:  rgba(0,0,0,0.07);
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body {
-  height: 100%;
-  background: var(--bg);
-  color: var(--g3);
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 13px;
-  overflow: hidden;
-  -webkit-font-smoothing: antialiased;
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  height:100%;overflow:hidden;
+  background:var(--desk);
+  color:var(--tx);
+  font-family:'Courier New',monospace;
+  font-size:13px;
+  user-select:none;
+}
+/* scanlines */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:9000;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scan) 2px,var(--scan) 4px);
+}
+/* flicker */
+@keyframes flicker{0%,95%,100%{opacity:1}96%{opacity:.95}98%{opacity:.92}}
+body{animation:flicker 14s ease-in-out infinite;}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── BOOT ─────────────────────────────────────── */
+#boot{
+  position:fixed;inset:0;z-index:8000;
+  background:var(--desk);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:32px 24px;
+}
+#bootPre{
+  font-size:12px;line-height:1.8;white-space:pre;
+  max-width:600px;width:100%;
+  color:#4a8fb0;
+}
+#bootPre .hi{color:#7ac8e0;}
+#bootPre .ok{color:var(--gbr);}
+#bootPre .err{color:var(--redbr);}
+#bootPre .dim{color:#1c3448;}
+#bootPre .warn{color:var(--amb);}
+#bootSkip{
+  position:absolute;bottom:20px;right:24px;
+  font-size:10px;letter-spacing:.2em;color:#1c3448;
+  cursor:pointer;text-transform:uppercase;transition:color .2s;
+}
+#bootSkip:hover{color:#2a5070;}
+
+/* ── DESKTOP ──────────────────────────────────── */
+#desktop{
+  display:none;
+  width:100%;height:100vh;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(ellipse at 30% 20%,rgba(30,50,80,.18) 0%,transparent 60%),
+    radial-gradient(ellipse at 70% 80%,rgba(20,30,50,.25) 0%,transparent 60%),
+    var(--desk);
+}
+/* dot grid */
+#desktop::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:radial-gradient(circle,rgba(56,139,253,.12) 1px,transparent 1px);
+  background-size:28px 28px;
 }
 
-/* ── SCANLINES ── */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 90;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 2px,
-    rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px
-  );
+/* ── ICONS ────────────────────────────────────── */
+.icon-grid{
+  position:absolute;left:16px;top:16px;
+  display:flex;flex-direction:column;gap:8px;
+  padding-bottom:56px;
+}
+.icon{
+  width:80px;display:flex;flex-direction:column;
+  align-items:center;gap:5px;padding:8px 4px;
+  cursor:pointer;border-radius:6px;
+  transition:background .15s;position:relative;
+}
+.icon:hover{background:rgba(56,139,253,.12);}
+.icon.selected{background:rgba(56,139,253,.2);}
+.icon-img{
+  width:48px;height:48px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;position:relative;
+}
+.icon-img.folder{font-size:32px;}
+.icon-label{
+  font-size:9px;letter-spacing:.05em;color:var(--tx);
+  text-align:center;line-height:1.3;word-break:break-all;
+  text-shadow:0 1px 4px rgba(0,0,0,.8);
+}
+.icon.locked .icon-img::after{
+  content:'🔒';position:absolute;bottom:-4px;right:-4px;font-size:12px;
+}
+.icon.secret{display:none;}
+.icon.secret.show{display:flex;}
+.icon-badge{
+  position:absolute;top:4px;right:4px;
+  background:var(--redbr);color:#fff;
+  font-size:8px;padding:1px 4px;border-radius:8px;
+  animation:pulse 1.2s infinite;
 }
 
-/* ── FLICKER ── */
-@keyframes flicker {
-  0%,96%,100%{opacity:1}97%{opacity:.93}98%{opacity:.97}99%{opacity:.91}
+/* ── WINDOWS ──────────────────────────────────── */
+.window{
+  position:absolute;
+  display:none;
+  flex-direction:column;
+  border:1px solid var(--br);
+  border-radius:8px;
+  overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 .5px rgba(255,255,255,.04);
+  min-width:300px;min-height:200px;
+  resize:both;
+  background:var(--wb);
+  animation:fadeIn .18s ease;
 }
-body { animation: flicker 12s ease-in-out infinite; }
+.window.active{border-color:#3a5070;box-shadow:0 12px 48px rgba(0,0,0,.75),0 0 0 1px rgba(56,139,253,.2);}
+.window.maximized{
+  top:0!important;left:0!important;
+  width:100vw!important;height:calc(100vh - 40px)!important;
+  border-radius:0;resize:none;
+}
+.window.minimized{display:none!important;}
 
-/* ── GLITCH OVERLAY ── */
-#glitchOverlay {
-  position: fixed; inset: 0; z-index: 200;
-  background: var(--red);
-  display: flex; align-items: center; justify-content: center;
-  opacity: 0; pointer-events: none;
-  font-family: 'Special Elite', serif;
-  font-size: clamp(22px, 5vw, 42px);
-  letter-spacing: 0.25em;
-  color: #fff;
-  text-shadow: 0 0 30px #fff, 0 0 60px rgba(255,255,255,0.5);
-  text-align: center;
-  padding: 20px;
-  transition: opacity 0.05s;
+/* title bar */
+.win-bar{
+  height:34px;flex-shrink:0;
+  background:var(--wbr);
+  display:flex;align-items:center;
+  padding:0 10px;gap:10px;
+  cursor:grab;
+  border-bottom:1px solid var(--br);
 }
+.win-bar:active{cursor:grabbing;}
+.window.active .win-bar{background:var(--wba);}
+.win-dots{display:flex;gap:6px;flex-shrink:0;}
+.win-dot{
+  width:12px;height:12px;border-radius:50%;cursor:pointer;
+  transition:filter .15s;display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:transparent;
+}
+.win-dot:hover{color:rgba(0,0,0,.6);}
+.win-dot.cls{background:#ff5f57;}.win-dot.cls:hover{filter:brightness(.85);}
+.win-dot.min{background:#ffbd2e;}.win-dot.min:hover{filter:brightness(.85);}
+.win-dot.max{background:#28c840;}.win-dot.max:hover{filter:brightness(.85);}
+.win-title{
+  flex:1;font-size:11px;letter-spacing:.12em;
+  color:var(--dim);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.window.active .win-title{color:var(--tx);}
+.win-icon{font-size:13px;flex-shrink:0;}
 
-/* ── BOOT ── */
-#boot {
-  position: fixed; inset: 0; z-index: 100;
-  background: var(--bg);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  padding: 32px 24px;
+/* window body */
+.win-body{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:var(--br) transparent;
 }
-#bootPre {
-  font-family: 'Courier New', monospace;
-  font-size: 12px;
-  color: var(--g3);
-  line-height: 1.65;
-  white-space: pre;
-  max-width: 580px;
-  width: 100%;
-  text-shadow: 0 0 10px var(--g1);
-  overflow: hidden;
-}
-#bootPre .hi { color: var(--g4); text-shadow: 0 0 12px var(--g3); }
-#bootPre .dim { color: var(--g1); }
-#bootPre .ok  { color: var(--g4); }
-#bootPre .err { color: var(--red); }
-#bootCursor {
-  display: inline-block;
-  width: 8px; height: 14px;
-  background: var(--g3);
-  vertical-align: middle;
-  animation: blink .7s step-end infinite;
-  margin-left: 2px;
-}
-@keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
-#bootSkip {
-  position: absolute; bottom: 20px; right: 24px;
-  font-size: 10px; letter-spacing: 0.22em;
-  color: var(--g1); cursor: pointer; text-transform: uppercase;
-  transition: color .2s;
-}
-#bootSkip:hover { color: var(--g2); }
+.win-body::-webkit-scrollbar{width:4px;}
+.win-body::-webkit-scrollbar-thumb{background:var(--br);}
 
-/* ── APP LAYOUT ── */
-#app {
-  height: 100vh;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  overflow: hidden;
+/* ── CONTENT: PAPER ──────────────────────────── */
+.pw{padding:20px;background:var(--wb);}
+.paper{
+  background:var(--pap);color:var(--papd);
+  font-family:'Crimson Text',Georgia,serif;
+  font-size:16px;line-height:1.9;
+  padding:48px 52px 56px;
+  max-width:580px;margin:0 auto;
+  position:relative;
+  box-shadow:0 4px 32px rgba(0,0,0,.5);
 }
-#app.off { display: none; }
+.paper::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(74,37,8,.05) 30px,rgba(74,37,8,.05) 31px);
+}
+.stamp{
+  position:absolute;top:28px;right:32px;
+  font-family:'Special Elite',serif;font-size:11px;letter-spacing:.22em;
+  color:rgba(126,20,25,.7);border:2px solid rgba(126,20,25,.5);
+  padding:4px 10px 3px;text-transform:uppercase;transform:rotate(3.5deg);z-index:1;
+}
+.paper-lbl{
+  font-family:'Special Elite',serif;font-size:8px;
+  letter-spacing:.45em;color:#7a5030;opacity:.7;
+  text-transform:uppercase;margin-bottom:24px;
+}
+.paper-ttl{
+  font-family:'Special Elite',serif;font-size:17px;
+  letter-spacing:.1em;color:#1a0e06;text-transform:uppercase;
+  border-bottom:1px solid rgba(74,37,8,.18);
+  padding-bottom:12px;margin-bottom:20px;
+}
+.paper p{margin-bottom:18px;color:#2c1a0c;}
+.paper p.lead{font-size:17px;font-weight:600;color:#1a0e06;}
+.paper-sig{
+  font-family:'Special Elite',serif;font-size:12px;
+  letter-spacing:.2em;color:#4a2810;text-transform:uppercase;
+  margin-top:24px;line-height:2;
+}
+.paper-date{font-size:11px;color:#7a5030;font-style:italic;margin-top:4px;}
+.rx{
+  background:#1a0e06;color:transparent;cursor:pointer;
+  padding:0 3px;border-radius:1px;transition:background .25s,color .25s;
+}
+.rx:hover{background:#2e1a0e;}
+.rx.open{background:rgba(126,20,25,.12);color:#7e1419;cursor:default;}
 
-/* ── HEADER ── */
-.t-head {
-  border-bottom: 1px solid var(--g1);
-  padding: 9px 20px;
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-  background: rgba(0,8,0,.55);
-  flex-shrink: 0;
-}
-.t-head-l { display: flex; align-items: center; gap: 18px; }
-.t-logo {
-  font-family: 'Special Elite', serif;
-  font-size: 11px; letter-spacing: .45em;
-  color: var(--g4); text-shadow: 0 0 12px var(--g3);
-  text-transform: uppercase;
-}
-.t-path { font-size: 10px; color: var(--g1); letter-spacing: .08em; }
-.t-meta { font-size: 10px; color: var(--g2); letter-spacing: .18em; display: flex; gap: 16px; }
-.t-dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: var(--g3); display: inline-block; margin-right: 4px;
-  box-shadow: 0 0 7px var(--g3);
-  animation: pulse 2.5s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+/* ── CONTENT: LOG ────────────────────────────── */
+.log-view{padding:16px 20px;font-size:12px;line-height:2;}
+.log-view .ts{color:var(--dim);}
+.log-view .key{color:#58a6ff;min-width:120px;display:inline-block;letter-spacing:.08em;}
+.log-view .val{color:var(--amb);}
+.log-view .chk{color:var(--gbr);}
+.log-view .sep{color:var(--br);display:block;padding:4px 0;}
+.log-view .fin{color:#58a6ff;}
+.log-view .sys{color:var(--dim);font-style:italic;}
+.log-chat .ts2{color:#1c3a48;}
+.log-chat .usr{color:#58a6ff;}
+.log-chat .arq{color:var(--amb);}
+.log-chat .sys2{color:var(--redbr);}
 
-/* ── BODY ── */
-.t-body {
-  display: flex; overflow: hidden;
-  min-height: 0;
+/* ── CONTENT: EXPLORER ───────────────────────── */
+.explorer{display:flex;flex-direction:column;height:100%;}
+.exp-toolbar{
+  padding:8px 12px;border-bottom:1px solid var(--br);
+  font-size:10px;color:var(--dim);letter-spacing:.12em;display:flex;gap:8px;align-items:center;
 }
-
-/* ── SIDEBAR ── */
-.sidebar {
-  width: 252px; flex-shrink: 0;
-  border-right: 1px solid var(--g1);
-  display: flex; flex-direction: column;
-  background: rgba(0,6,0,.4);
-  overflow: hidden;
+.exp-toolbar span{color:var(--tx);}
+.exp-files{
+  flex:1;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(110px,1fr));
+  gap:4px;padding:12px;align-content:start;
 }
-.sb-head {
-  padding: 12px 16px 8px;
-  font-size: 9px; letter-spacing: .35em; color: var(--g1);
-  text-transform: uppercase;
-  border-bottom: 1px solid #0c1509;
-  flex-shrink: 0;
+.exp-file{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:12px 8px;border-radius:6px;cursor:pointer;
+  transition:background .15s;text-align:center;
 }
-.sb-list { flex: 1; overflow-y: auto; padding: 6px 0; }
-.sb-list::-webkit-scrollbar { width: 2px; }
-.sb-list::-webkit-scrollbar-thumb { background: var(--g1); }
-
-.fi {
-  display: flex; align-items: center; gap: 9px;
-  padding: 9px 14px; cursor: pointer;
-  transition: background .15s; position: relative;
-  user-select: none;
-}
-.fi:hover   { background: rgba(60,114,40,.09); }
-.fi.active  { background: rgba(60,114,40,.17); }
-.fi.locked  { opacity: .35; cursor: default; }
-.fi.locked:hover { background: none; }
-.fi.corrupt { cursor: pointer; }
-.fi.secret  { display: none; }
-.fi.secret.show { display: flex; }
-
-.fi-type { font-size: 9px; color: var(--g1); width: 34px; flex-shrink: 0; letter-spacing: .05em; }
-.fi-type.d { color: var(--g2); }
-.fi-type.l { color: var(--amb); }
-.fi-type.e { color: var(--red); }
-.fi-name { font-size: 11px; color: var(--g3); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.fi.corrupt .fi-name { color: var(--red); text-decoration: line-through; letter-spacing: .06em; }
-
-.fi-badge {
-  font-size: 8px; letter-spacing: .12em; padding: 1px 5px;
-  border: 1px solid var(--g4); color: var(--g4);
-  text-transform: uppercase;
-  animation: badgeFade 1.1s ease-in-out infinite;
-}
-@keyframes badgeFade { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-/* ── VIEWER ── */
-.viewer {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
-  position: relative;
-}
-.viewer::-webkit-scrollbar { width: 4px; }
-.viewer::-webkit-scrollbar-thumb { background: var(--g1); }
-
-.welcome {
-  height: 100%; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-align: center; padding: 40px; gap: 0;
-}
-.welcome-ix {
-  font-family: 'Special Elite', serif;
-  font-size: clamp(100px,18vw,180px);
-  letter-spacing: .04em; line-height: 1;
-  color: var(--g1); opacity: .15;
-  text-shadow: 0 0 60px var(--g1);
-  user-select: none; margin-bottom: 28px;
-}
-.welcome p { font-size: 11px; letter-spacing: .25em; color: var(--g1); line-height: 2.2; }
-.welcome p.hi { color: var(--g2); }
-
-/* ── DOC VIEW ── */
-.dv { padding: 24px 28px 48px; animation: dvIn .25s ease; }
-@keyframes dvIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
-
-.dv-head {
-  border-bottom: 1px solid var(--g1);
-  padding-bottom: 12px; margin-bottom: 22px;
-  display: flex; justify-content: space-between;
-  align-items: flex-start; gap: 12px; flex-wrap: wrap;
-}
-.dv-title { font-size: 11px; letter-spacing: .3em; color: var(--g4); text-transform: uppercase; }
-.dv-meta  { font-size: 10px; color: var(--g1); letter-spacing: .08em; line-height: 1.9; text-align: right; }
-
-/* LOG style */
-.lc { line-height: 2; }
-.lc .ts  { color: var(--g1); }
-.lc .key { color: var(--g4); letter-spacing: .12em; display: inline-block; min-width: 128px; }
-.lc .val { color: var(--amb); letter-spacing: .1em; }
-.lc .chk { color: var(--g3); }
-.lc .sep { color: var(--g1); padding: 6px 0; display: block; }
-.lc .fin { color: var(--g4); font-size: 12px; }
-
-/* PAPER style */
-.pw { padding: 6px 12px 32px; }
-.paper {
-  background: var(--pap);
-  color: var(--papd);
-  font-family: 'Crimson Text', Georgia, serif;
-  font-size: 16px; line-height: 1.92;
-  padding: 52px 56px 60px;
-  max-width: 620px; margin: 0 auto;
-  position: relative;
-  box-shadow: 0 8px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(0,0,0,.3);
-}
-.paper::before {
-  content: '';
-  position: absolute; inset: 0; pointer-events: none;
-  background: repeating-linear-gradient(
-    0deg, transparent, transparent 30px,
-    rgba(74,37,8,.055) 30px, rgba(74,37,8,.055) 31px
-  );
-}
-.paper::after {
-  content: '';
-  position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 50%, rgba(0,0,0,.06) 100%);
-}
-.stamp {
-  position: absolute; top: 32px; right: 36px;
-  font-family: 'Special Elite', serif;
-  font-size: 13px; letter-spacing: .22em;
-  color: rgba(126,20,25,.72);
-  border: 2px solid rgba(126,20,25,.55);
-  padding: 5px 12px 4px;
-  text-transform: uppercase;
-  transform: rotate(3.5deg);
-  user-select: none; z-index: 1;
-}
-.paper-lbl {
-  font-family: 'Special Elite', serif;
-  font-size: 8px; letter-spacing: .45em;
-  color: #7a5030; text-transform: uppercase;
-  margin-bottom: 28px; opacity: .7;
-}
-.paper-ttl {
-  font-family: 'Special Elite', serif;
-  font-size: 18px; letter-spacing: .1em;
-  color: #1a0e06; text-transform: uppercase;
-  border-bottom: 1px solid rgba(74,37,8,.18);
-  padding-bottom: 14px; margin-bottom: 24px;
-}
-.paper p { margin-bottom: 20px; color: #2c1a0c; }
-.paper p.lead { font-size: 18px; font-weight: 600; color: #1a0e06; }
-.paper p em { font-style: italic; }
-.paper-sig {
-  font-family: 'Special Elite', serif;
-  font-size: 13px; letter-spacing: .2em;
-  color: #4a2810; text-transform: uppercase;
-  margin-top: 28px; line-height: 2;
-}
-.paper-date { font-size: 12px; color: #7a5030; font-style: italic; margin-top: 2px; }
-
-/* Redacted */
-.rx {
-  background: #1a0e06; color: transparent;
-  cursor: pointer; padding: 0 3px; border-radius: 1px;
-  transition: background .25s, color .25s;
-  position: relative;
-}
-.rx:hover { background: #2e1a0e; }
-.rx:hover::after {
-  content: ' ▶ revelar';
-  position: absolute; right: 0; top: -20px;
-  font-size: 9px; color: rgba(126,20,25,.8);
-  letter-spacing: .1em; white-space: nowrap;
-  background: var(--pap); padding: 2px 5px;
-  border: 1px solid rgba(126,20,25,.3); pointer-events: none;
-}
-.rx.open { background: rgba(126,20,25,.12); color: #7e1419; cursor: default; }
-
-/* ── FOOTER (TERMINAL) ── */
-.t-foot {
-  border-top: 1px solid var(--g1);
-  background: rgba(0,6,0,.5);
-  flex-shrink: 0;
-}
-.t-out {
-  max-height: 110px; overflow-y: auto;
-  padding: 8px 20px 4px;
-  font-size: 11px; line-height: 1.75;
-}
-.t-out:empty { display: none; }
-.t-out::-webkit-scrollbar { width: 2px; }
-.t-out::-webkit-scrollbar-thumb { background: var(--g1); }
-.tl { color: var(--g2); }
-.tl.ok  { color: var(--g4); }
-.tl.err { color: var(--red); }
-.tl.dim { color: var(--g1); }
-.tl.inp { color: var(--g3); opacity: .6; }
-.t-cmd {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 20px 10px;
-}
-.t-prompt { color: var(--g4); font-size: 12px; white-space: nowrap; text-shadow: 0 0 10px var(--g3); }
-#cmd {
-  flex: 1; background: transparent; border: none;
-  color: var(--g3); font-family: 'Courier New', monospace;
-  font-size: 12px; outline: none;
-  caret-color: var(--g4);
+.exp-file:hover{background:rgba(56,139,253,.1);}
+.exp-file.locked{opacity:.4;cursor:not-allowed;}
+.exp-file-ico{font-size:28px;}
+.exp-file-name{font-size:9px;letter-spacing:.05em;color:var(--tx);line-height:1.3;word-break:break-all;}
+.exp-file-size{font-size:8px;color:var(--dim);}
+.exp-status{
+  padding:6px 12px;border-top:1px solid var(--br);
+  font-size:9px;color:var(--dim);letter-spacing:.1em;
 }
 
-/* ── GLITCH ANIM ── */
-@keyframes gShake {
+/* ── CONTENT: TERMINAL ───────────────────────── */
+.term{
+  display:flex;flex-direction:column;height:100%;
+  background:#040608;
+}
+.term-out{
+  flex:1;overflow-y:auto;padding:12px 14px;
+  font-size:12px;line-height:1.8;
+  scrollbar-width:thin;scrollbar-color:#1c3448 transparent;
+}
+.term-out::-webkit-scrollbar{width:3px;}
+.term-out::-webkit-scrollbar-thumb{background:#1c3448;}
+.tl{color:#3a7228;}
+.tl.ok{color:#5aaa40;}
+.tl.err{color:var(--redbr);}
+.tl.dim{color:#1c3448;}
+.tl.acc{color:#58a6ff;}
+.tl.amb{color:var(--amb);}
+.tl.inp{color:#2a5838;opacity:.7;}
+.term-input{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 14px;border-top:1px solid #0c1a10;
+}
+.term-prompt{color:#5aaa40;white-space:nowrap;font-size:12px;text-shadow:0 0 10px #3a7228;}
+#termCmd{
+  flex:1;background:transparent;border:none;color:#5aaa40;
+  font-family:'Courier New',monospace;font-size:12px;outline:none;caret-color:#5aaa40;
+}
+
+/* ── CONTENT: CORRUPTED ──────────────────────── */
+.corrupt-view{
+  padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:200px;gap:16px;text-align:center;
+}
+.corrupt-hex{
+  font-size:11px;color:var(--redbr);line-height:2;
+  letter-spacing:.08em;word-break:break-all;max-width:480px;
+  animation:flicker 3s infinite;
+}
+.corrupt-msg{
+  font-family:'Special Elite',serif;font-size:18px;
+  letter-spacing:.2em;color:var(--redbr);
+  text-shadow:0 0 20px var(--redbr);
+  animation:pulse 2s infinite;
+}
+.corrupt-btn{
+  font-family:'Courier New',monospace;font-size:10px;
+  letter-spacing:.15em;color:var(--redbr);background:transparent;
+  border:1px solid rgba(139,32,32,.5);padding:6px 16px;cursor:pointer;
+  text-transform:uppercase;transition:all .2s;
+}
+.corrupt-btn:hover{background:rgba(139,32,32,.15);border-color:var(--redbr);}
+@keyframes gShake{
   0%,100%{transform:none;filter:none}
-  10%{transform:translate(-5px,2px) skewX(-2deg);filter:hue-rotate(90deg) brightness(1.6)}
-  20%{transform:translate(5px,-3px);filter:invert(.15)}
-  30%{transform:translate(-3px,5px) skewX(1deg);filter:hue-rotate(-90deg) saturate(2)}
-  40%{transform:translate(4px,-2px);filter:brightness(2.2) saturate(0)}
-  50%{transform:translate(-4px,3px) skewX(-1deg);filter:hue-rotate(180deg)}
-  60%{transform:translate(3px,1px);filter:invert(.2) brightness(1.4)}
-  70%{transform:translate(-2px,-3px);filter:none}
-  80%{transform:translate(4px,2px);filter:hue-rotate(45deg) brightness(1.3)}
-  90%{transform:translate(-1px,3px) skewX(.5deg);filter:brightness(.6)}
+  15%{transform:translate(-6px,2px) skewX(-3deg);filter:hue-rotate(90deg) brightness(1.8)}
+  30%{transform:translate(5px,-3px);filter:invert(.15)}
+  45%{transform:translate(-4px,5px) skewX(2deg);filter:hue-rotate(-90deg) saturate(2)}
+  60%{transform:translate(4px,-2px);filter:brightness(2.5) saturate(0)}
+  75%{transform:translate(-3px,3px);filter:hue-rotate(180deg) brightness(1.3)}
+  90%{transform:translate(3px,1px);filter:invert(.2)}
 }
-.glitching { animation: gShake .55s ease forwards !important; }
+.glitching{animation:gShake .5s ease forwards!important;}
+#glitchOverlay{
+  position:fixed;inset:0;z-index:7000;pointer-events:none;
+  background:var(--redbr);opacity:0;transition:opacity .04s;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Special Elite',serif;font-size:clamp(20px,4vw,38px);
+  letter-spacing:.25em;color:#fff;text-align:center;padding:20px;
+  text-shadow:0 0 30px #fff;
+}
 
-/* ── RESPONSIVE ── */
-@media(max-width:600px){
-  .sidebar { width: 200px; }
-  .paper { padding: 32px 22px 48px; }
-  .stamp { font-size: 11px; top: 18px; right: 18px; }
+/* ── TASKBAR ──────────────────────────────────── */
+#taskbar{
+  position:fixed;bottom:0;left:0;right:0;
+  height:40px;background:#111820;border-top:1px solid var(--br);
+  display:none;align-items:center;padding:0 8px;gap:4px;z-index:6000;
 }
-@media(max-width:440px){
-  .t-body { flex-direction: column; }
-  .sidebar { width: 100%; height: 148px; border-right: none; border-bottom: 1px solid var(--g1); }
-  .sb-list { overflow-y: hidden; overflow-x: auto; display: flex; }
-  .fi { flex-direction: column; align-items: flex-start; min-width: 150px; padding: 8px 12px; }
+.tb-logo{
+  font-family:'Special Elite',serif;font-size:11px;letter-spacing:.25em;
+  color:#58a6ff;padding:4px 10px;border-radius:4px;
+  cursor:pointer;flex-shrink:0;transition:background .15s;white-space:nowrap;
+}
+.tb-logo:hover{background:rgba(56,139,253,.15);}
+.tb-sep{width:1px;height:22px;background:var(--br);flex-shrink:0;}
+.tb-wins{display:flex;gap:3px;flex:1;overflow:hidden;}
+.tb-btn{
+  font-size:9px;letter-spacing:.1em;padding:3px 8px;
+  border-radius:3px;cursor:pointer;transition:background .15s;
+  color:var(--dim);white-space:nowrap;flex-shrink:0;
+  border:1px solid transparent;max-width:140px;overflow:hidden;text-overflow:ellipsis;
+}
+.tb-btn:hover{background:rgba(255,255,255,.05);color:var(--tx);}
+.tb-btn.open{color:var(--tx);border-color:var(--br);}
+.tb-btn.minimized{color:var(--dim);border-color:transparent;opacity:.6;}
+.tb-right{display:flex;align-items:center;gap:12px;flex-shrink:0;padding-left:8px;}
+.tb-status{
+  font-size:9px;letter-spacing:.15em;
+  display:flex;align-items:center;gap:4px;
+}
+.tb-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gbr);box-shadow:0 0 5px var(--gbr);
+  animation:pulse 2.5s ease-in-out infinite;
+}
+#tbClock{font-size:10px;letter-spacing:.12em;color:var(--tx);}
+
+/* ── RESPONSIVE ──────────────────────────────── */
+@media(max-width:600px){
+  .icon-grid{flex-direction:row;flex-wrap:wrap;left:8px;right:8px;top:8px;width:auto;}
+  .icon{width:70px;}
+  .paper{padding:28px 20px 40px;}
+  .stamp{font-size:9px;top:16px;right:16px;}
 }
 </style>
 </head>
@@ -383,497 +394,1058 @@ body { animation: flicker 12s ease-in-out infinite; }
 
 <!-- ═══ BOOT ═══ -->
 <div id="boot">
-  <div id="bootPre"></div><span id="bootCursor"></span>
-  <div id="bootSkip">[ clique para pular ]</div>
+  <div id="bootPre"></div>
+  <div id="bootSkip">[ pressione qualquer tecla para pular ]</div>
 </div>
 
-<!-- ═══ APP ═══ -->
-<div id="app" class="off">
+<!-- ═══ DESKTOP ═══ -->
+<div id="desktop">
 
-  <header class="t-head">
-    <div class="t-head-l">
-      <span class="t-logo">Atlas · Arquivo</span>
-      <span class="t-path">/projeto/ix/raiz</span>
+  <!-- Icons -->
+  <div class="icon-grid" id="iconGrid">
+
+    <div class="icon" ondblclick="openWin('carta')" title="CARTA_ARQUIVISTA.doc">
+      <div class="icon-img">📄</div>
+      <div class="icon-label">CARTA_ARQUIVISTA.doc</div>
     </div>
-    <div class="t-meta">
-      <span><span class="t-dot"></span>conectado</span>
-      <span id="fc">0 / 4 abertos</span>
+
+    <div class="icon" ondblclick="openWin('arquivo')" title="ARQUIVO_ATLAS/">
+      <div class="icon-img folder">📁</div>
+      <div class="icon-label">ARQUIVO_ATLAS/</div>
     </div>
-  </header>
 
-  <div class="t-body">
+    <div class="icon" ondblclick="openWin('fragmentos')" title="FRAGMENTOS.log">
+      <div class="icon-img">📋</div>
+      <div class="icon-label">FRAGMENTOS.log</div>
+    </div>
 
-    <!-- sidebar -->
-    <aside class="sidebar">
-      <div class="sb-head">── arquivos do sistema ──</div>
-      <nav class="sb-list" id="sbList">
+    <div class="icon" ondblclick="openWin('minecraft')" title="MINECRAFT_SRV.log">
+      <div class="icon-img">🎮</div>
+      <div class="icon-label">MINECRAFT_SRV.log</div>
+    </div>
 
-        <div class="fi" data-f="carta" onclick="openFile('carta')">
-          <span class="fi-type d">[DOC]</span>
-          <span class="fi-name">CARTA_ARQUIVISTA.doc</span>
-        </div>
+    <div class="icon" ondblclick="openWin('bin')" title="███████.bin">
+      <div class="icon-img">⚠️</div>
+      <div class="icon-label">███████.bin</div>
+    </div>
 
-        <div class="fi" data-f="palavras" onclick="openFile('palavras')">
-          <span class="fi-type l">[LOG]</span>
-          <span class="fi-name">PALAVRAS_ENCONTRADAS.log</span>
-        </div>
+    <div class="icon" ondblclick="openWin('terminal')" title="Terminal">
+      <div class="icon-img">⬛</div>
+      <div class="icon-label">Terminal</div>
+    </div>
 
-        <div class="fi" data-f="registro" onclick="openFile('registro')">
-          <span class="fi-type d">[DOC]</span>
-          <span class="fi-name">REGISTRO_IX.doc</span>
-        </div>
+    <div class="icon locked" id="iconRestrita" title="Acesso negado" ondblclick="tryRestrita()">
+      <div class="icon-img folder">📁</div>
+      <div class="icon-label">PASTA_RESTRITA/</div>
+    </div>
 
-        <div class="fi" data-f="entrada" onclick="openFile('entrada')">
-          <span class="fi-type d">[DOC]</span>
-          <span class="fi-name">ENTRADA_FINAL.doc</span>
-        </div>
-
-        <div class="fi locked" title="sem permissão">
-          <span class="fi-type">[WAV]</span>
-          <span class="fi-name">SOM_AMBIENTE.wav</span>
-        </div>
-
-        <div class="fi corrupt" data-f="bin" onclick="openBin()">
-          <span class="fi-type e">[ENC]</span>
-          <span class="fi-name">███████████████.bin</span>
-        </div>
-
-        <div class="fi secret" id="fiSecret" data-f="nota" onclick="openFile('nota')">
-          <span class="fi-type d">[DOC]</span>
-          <span class="fi-name">NOTA_PESSOAL.doc</span>
-          <span class="fi-badge">novo</span>
-        </div>
-
-      </nav>
-    </aside>
-
-    <!-- viewer -->
-    <main class="viewer" id="viewer">
-      <div class="welcome" id="welcome">
-        <div class="welcome-ix">IX</div>
-        <p class="hi">acesso autorizado · fragmentos verificados: 13/13</p>
-        <p style="margin-top:10px;">selecione um arquivo para visualizar<span style="animation:blink .7s step-end infinite;color:var(--g4)">_</span></p>
-      </div>
-    </main>
+    <div class="icon secret" id="iconNota" ondblclick="openWin('nota')" title="NOTA_PESSOAL.doc">
+      <div class="icon-img">📝</div>
+      <div class="icon-label">NOTA_PESSOAL.doc</div>
+      <div class="icon-badge">!</div>
+    </div>
 
   </div>
 
-  <!-- terminal footer -->
-  <footer class="t-foot">
-    <div class="t-out" id="tout"></div>
-    <div class="t-cmd">
-      <span class="t-prompt">atlas@ix:~$</span>
-      <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder="digite um comando  (help para listar)">
-    </div>
-  </footer>
+  <!-- ═══ WINDOWS ═══ -->
 
+  <!-- CARTA DO ARQUIVISTA -->
+  <div class="window" id="win-carta" style="left:120px;top:60px;width:580px;height:560px;">
+    <div class="win-bar" ondblclick="toggleMax('carta')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('carta')" title="fechar">✕</div>
+        <div class="win-dot min" onclick="minWin('carta')" title="minimizar">─</div>
+        <div class="win-dot max" onclick="toggleMax('carta')" title="maximizar">□</div>
+      </div>
+      <span class="win-icon">📄</span>
+      <span class="win-title">CARTA_ARQUIVISTA.doc — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="pw">
+        <div class="paper">
+          <div class="stamp">Confidencial</div>
+          <div class="paper-lbl">[ carta do arquivista — acesso liberado ]</div>
+          <p class="lead">Você chegou.</p>
+          <p>Eu não sei quanto tempo levou.<br>
+          Não importa. O que importa é que você está aqui.</p>
+          <p>O Projeto IX não é uma edição do jornal.<br>
+          Nunca foi.</p>
+          <p>É o nome que dei ao espaço entre as coisas.<br>
+          Entre o oito e o dez. Entre o que foi publicado e o que ficou guardado.<br>
+          Entre o que o Atlas mostra — e o que ele carrega em silêncio.</p>
+          <p>Você percorreu esse espaço inteiro.<br>
+          Treze palavras. Treze caminhos distintos.<br>
+          Cada uma escondida de uma forma diferente.</p>
+          <p>Explore os arquivos desta pasta. Há mais do que parece.<br>
+          Há um servidor de Minecraft que registrou uma conversa estranha.<br>
+          Há fragmentos que ninguém pediu para você procurar, mas que existem.<br>
+          Há uma pasta que ainda está trancada — mas nem sempre vai estar.</p>
+          <p>O Atlas é uma comunidade.<br>
+          Mas é também um arquivo vivo.<br>
+          Os espaços entre as edições são tão reais quanto qualquer palavra encontrada numa grade.</p>
+          <p><strong>Você acabou de catalogar um desses espaços.</strong></p>
+          <div class="paper-sig">— O Arquivista</div>
+          <div class="paper-date">[selado em 13/05/2026 · 23:11]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ARQUIVO_ATLAS/ (file explorer) -->
+  <div class="window" id="win-arquivo" style="left:200px;top:120px;width:520px;height:400px;">
+    <div class="win-bar" ondblclick="toggleMax('arquivo')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('arquivo')">✕</div>
+        <div class="win-dot min" onclick="minWin('arquivo')">─</div>
+        <div class="win-dot max" onclick="toggleMax('arquivo')">□</div>
+      </div>
+      <span class="win-icon">📁</span>
+      <span class="win-title">ARQUIVO_ATLAS/ — Explorador</span>
+    </div>
+    <div class="win-body">
+      <div class="explorer">
+        <div class="exp-toolbar">
+          <span style="color:var(--dim)">📁</span>
+          <span>ARQUIVO_ATLAS</span>
+          <span style="color:var(--dim)">›</span>
+          <span style="color:var(--acc)">raiz</span>
+        </div>
+        <div class="exp-files">
+          <div class="exp-file" ondblclick="openWin('registro')">
+            <div class="exp-file-ico">📄</div>
+            <div class="exp-file-name">REGISTRO_IX.doc</div>
+            <div class="exp-file-size">2.4 KB</div>
+          </div>
+          <div class="exp-file" ondblclick="openWin('entrada')">
+            <div class="exp-file-ico">📄</div>
+            <div class="exp-file-name">ENTRADA_FINAL.doc</div>
+            <div class="exp-file-size">1.8 KB</div>
+          </div>
+          <div class="exp-file" id="expRelatorio" ondblclick="openWin('relatorio')">
+            <div class="exp-file-ico">📄</div>
+            <div class="exp-file-name">RELATORIO_LACUNA.doc</div>
+            <div class="exp-file-size">3.1 KB</div>
+          </div>
+          <div class="exp-file" ondblclick="openWin('fragmentos')">
+            <div class="exp-file-ico">📋</div>
+            <div class="exp-file-name">FRAGMENTOS.log</div>
+            <div class="exp-file-size">4.0 KB</div>
+          </div>
+          <div class="exp-file locked" title="acesso negado">
+            <div class="exp-file-ico">🔒</div>
+            <div class="exp-file-name">IX_ORIGEM.enc</div>
+            <div class="exp-file-size">??? KB</div>
+          </div>
+        </div>
+        <div class="exp-status" id="expStatus">5 itens · 1 protegido</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTRO_IX.doc -->
+  <div class="window" id="win-registro" style="left:260px;top:90px;width:560px;height:540px;">
+    <div class="win-bar" ondblclick="toggleMax('registro')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('registro')">✕</div>
+        <div class="win-dot min" onclick="minWin('registro')">─</div>
+        <div class="win-dot max" onclick="toggleMax('registro')">□</div>
+      </div>
+      <span class="win-icon">📄</span>
+      <span class="win-title">REGISTRO_IX.doc — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="pw">
+        <div class="paper">
+          <div class="stamp">Restrito</div>
+          <div class="paper-lbl">[ atlas/registro — projeto ix ]</div>
+          <div class="paper-ttl">Sobre a Origem</div>
+          <p>O Projeto IX foi concebido antes da primeira edição do jornal.<br>
+          Não como conteúdo. Como intenção.</p>
+          <p>Nove era o número escolhido para representar o que ficou entre os dias.<br>
+          Não o nono dia. Não a nona palavra. Apenas o conceito de lacuna.</p>
+          <p>O que foi construído em torno disso não tem nome nos registros oficiais.<br>
+          Tem apenas uma série de entradas espalhadas,<br>
+          esperando quem soubesse onde procurar.</p>
+          <p>Cada fragmento foi colocado num lugar específico por um motivo.<br>
+          O primeiro estava visível para quem quisesse ver.<br>
+          O último estava onde ninguém disse para procurar.</p>
+          <p>Entre eles: uma chave que abria outras coisas.<br>
+          Um número que o jornal nunca imprimiu.<br>
+          Uma sentinela que aparecia na hora certa.<br>
+          Um reflexo. Um erro que não era erro.<br>
+          Uma marca no lugar mais visitado.<br>
+          Uma assinatura para humanos.<br>
+          Uma porta que era o próprio número.</p>
+          <p>O projeto foi <span class="rx" onclick="this.classList.add('open')">concluído exatamente como foi planejado</span>.<br>
+          O arquivo está <span class="rx" onclick="this.classList.add('open')">aberto para quem chegou até aqui</span>.</p>
+          <div class="paper-sig">— Registro interno · IX</div>
+          <div class="paper-date">[última modificação: 13/05/2026]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTRADA_FINAL.doc -->
+  <div class="window" id="win-entrada" style="left:320px;top:100px;width:540px;height:500px;">
+    <div class="win-bar" ondblclick="toggleMax('entrada')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('entrada')">✕</div>
+        <div class="win-dot min" onclick="minWin('entrada')">─</div>
+        <div class="win-dot max" onclick="toggleMax('entrada')">□</div>
+      </div>
+      <span class="win-icon">📄</span>
+      <span class="win-title">ENTRADA_FINAL.doc — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="pw">
+        <div class="paper">
+          <div class="stamp">Arquivo</div>
+          <div class="paper-lbl">[ atlas/entrada final — projeto ix ]</div>
+          <div class="paper-ttl">O Que Vem Depois</div>
+          <p>Toda busca termina em algum lugar.<br>
+          Esta terminou aqui.</p>
+          <p>Mas o arquivo não se encerra com um fragmento revelado.<br>
+          O arquivo é contínuo. Ele registra enquanto existe alguém para registrar.</p>
+          <p>O que você trouxe para este lugar foi atenção.<br>
+          Atenção é rara. A maioria passa por cima sem olhar.<br>
+          Você parou. Você leu. Você procurou.</p>
+          <p>O Projeto IX agora é parte do registro permanente do Atlas.<br>
+          Treze fragmentos catalogados.<br>
+          Treze caminhos documentados.<br>
+          Um espaço entre os dias, finalmente nomeado.</p>
+          <p>O jornal vai continuar.<br>
+          As edições vão aparecer e desaparecer.<br>
+          Mas o IX vai existir entre todas elas — sempre.</p>
+          <p><em>Obrigado por ter chegado a tempo.</em></p>
+          <div class="paper-sig">— O Arquivista</div>
+          <div class="paper-date">[selado: 13/05/2026 · 23:11 · fragmento ix]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATORIO_LACUNA.doc -->
+  <div class="window" id="win-relatorio" style="left:180px;top:80px;width:560px;height:540px;">
+    <div class="win-bar" ondblclick="toggleMax('relatorio')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('relatorio')">✕</div>
+        <div class="win-dot min" onclick="minWin('relatorio')">─</div>
+        <div class="win-dot max" onclick="toggleMax('relatorio')">□</div>
+      </div>
+      <span class="win-icon">📄</span>
+      <span class="win-title">RELATORIO_LACUNA.doc — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="pw">
+        <div class="paper">
+          <div class="stamp">Classificado</div>
+          <div class="paper-lbl">[ relatório de campo — a lacuna ]</div>
+          <div class="paper-ttl">O Fragmento Sem Endereço</div>
+          <p>O décimo terceiro fragmento foi o mais difícil de esconder.<br>
+          Não por complexidade — mas por localização.</p>
+          <p>Ele não está vinculado a nenhum link. Não está indexado.<br>
+          Não tem referência direta em nenhuma página do jornal.</p>
+          <p>Ele existe em <span class="rx" onclick="this.classList.add('open')">/ix</span>.</p>
+          <p>Para chegar lá, era necessário entender três coisas:<br>
+          Primeiro, que havia uma pista no arquivo de registro — <em>"o número do projeto é o único mapa"</em>.<br>
+          Segundo, que o número do projeto é IX.<br>
+          Terceiro, que /ix era a porta.</p>
+          <p>Dentro da página, no código-fonte, estava escrito <span class="rx" onclick="this.classList.add('open')">LPCAND</span>.<br>
+          Não em português. Em cifra Vigenère.<br>
+          A mesma chave usada no fragmento dois: <span class="rx" onclick="this.classList.add('open')">APAGADO</span>.</p>
+          <p>LPCAND decifrado com APAGADO resulta em: <span class="rx" onclick="this.classList.add('open')">LACUNA</span>.</p>
+          <p>O fragmento estava onde ninguém disse para procurar.<br>
+          Mas você procurou mesmo assim.</p>
+          <div class="paper-sig">— Relatório de campo · LACUNA · XIII</div>
+          <div class="paper-date">[gerado após verificação do fragmento]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRAGMENTOS.log -->
+  <div class="window" id="win-fragmentos" style="left:150px;top:70px;width:640px;height:520px;">
+    <div class="win-bar" ondblclick="toggleMax('fragmentos')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('fragmentos')">✕</div>
+        <div class="win-dot min" onclick="minWin('fragmentos')">─</div>
+        <div class="win-dot max" onclick="toggleMax('fragmentos')">□</div>
+      </div>
+      <span class="win-icon">📋</span>
+      <span class="win-title">FRAGMENTOS.log — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="log-view">
+        <span class="sep">── ATLAS/IX · VERIFICAÇÃO DE FRAGMENTOS ──────────────────</span>
+        <div><span class="ts">[2026-05-13 23:11:42]</span>  <span class="key">FRAGMENTO_I</span>    <span class="val">OCULTO</span>      <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  espectrograma · frequência 14.7Hz · arquivo som_ambiente</span></div>
+        <div><span class="ts">[2026-05-13 23:11:43]</span>  <span class="key">FRAGMENTO_II</span>   <span class="val">APAGADO</span>     <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  acrosstico · nota_geraldo.txt · sete frases, sete letras</span></div>
+        <div><span class="ts">[2026-05-13 23:11:44]</span>  <span class="key">FRAGMENTO_III</span>  <span class="val">ONZE</span>        <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  página /11 · número que o jornal nunca imprimiu</span></div>
+        <div><span class="ts">[2026-05-13 23:11:45]</span>  <span class="key">FRAGMENTO_IV</span>   <span class="val">SENTINELA</span>   <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  /vigilia · visível apenas entre 23:05 e 23:16</span></div>
+        <div><span class="ts">[2026-05-13 23:11:46]</span>  <span class="key">FRAGMENTO_V</span>    <span class="val">ESPELHO</span>     <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  hiddenNum no index · 18% de opacidade</span></div>
+        <div><span class="ts">[2026-05-13 23:11:47]</span>  <span class="key">FRAGMENTO_VI</span>   <span class="val">CIFRADO</span>     <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  hex no /404 · 63 69 66 72 61 64 6f</span></div>
+        <div><span class="ts">[2026-05-13 23:11:48]</span>  <span class="key">FRAGMENTO_VII</span>  <span class="val">INTENCAO</span>    <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  /arquivo · a nona intenção que precede tudo</span></div>
+        <div><span class="ts">[2026-05-13 23:11:49]</span>  <span class="key">FRAGMENTO_VIII</span> <span class="val">RASTRO</span>      <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  robots.txt · base64 · "RASTRO." no final</span></div>
+        <div><span class="ts">[2026-05-13 23:11:50]</span>  <span class="key">FRAGMENTO_IX</span>   <span class="val">ABISMO</span>      <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  /admin · hex AQIYMR · decifrado com chave APAGADO</span></div>
+        <div><span class="ts">[2026-05-13 23:11:51]</span>  <span class="key">FRAGMENTO_X</span>    <span class="val">SINAL</span>       <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  X-Atlas-Sinal · header HTTP · base64 U0lOQUw=</span></div>
+        <div><span class="ts">[2026-05-13 23:11:52]</span>  <span class="key">FRAGMENTO_XI</span>   <span class="val">MARCA</span>       <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  index.html · comentário html · 4D 41 52 43 41</span></div>
+        <div><span class="ts">[2026-05-13 23:11:53]</span>  <span class="key">FRAGMENTO_XII</span>  <span class="val">ORIGEM</span>      <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  humans.txt · primeiras letras · O R I G E M</span></div>
+        <div><span class="ts">[2026-05-13 23:11:54]</span>  <span class="key">FRAGMENTO_XIII</span> <span class="val">LACUNA</span>      <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  /ix · código-fonte · LPCAND · vigenère APAGADO</span></div>
+        <span class="sep">──────────────────────────────────────────────────────────</span>
+        <div class="fin">── 13 / 13 fragmentos verificados · PROJETO IX : COMPLETO</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MINECRAFT_SRV.log -->
+  <div class="window" id="win-minecraft" style="left:160px;top:80px;width:600px;height:500px;">
+    <div class="win-bar" ondblclick="toggleMax('minecraft')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('minecraft')">✕</div>
+        <div class="win-dot min" onclick="minWin('minecraft')">─</div>
+        <div class="win-dot max" onclick="toggleMax('minecraft')">□</div>
+      </div>
+      <span class="win-icon">🎮</span>
+      <span class="win-title">MINECRAFT_SRV.log — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="log-view log-chat" style="font-size:11px;">
+        <span class="sep">── ATLAS MINECRAFT · LOG DE SESSÃO ──────────────────────</span>
+        <div><span class="ts2">[SERVER]</span> <span style="color:var(--dim)">Servidor: atlas-minecraft · Data: 08/05/2026</span></div>
+        <div><span class="ts2">[SERVER]</span> <span style="color:var(--dim)">Mapa: Entre_os_dias_v3 · Seed: -1309</span></div>
+        <span class="sep">─────────────────────────────────────────────────────────</span>
+        <div><span class="ts2">[08:44:12]</span> <span style="color:var(--dim)">[INFO] Servidor iniciado em modo privado.</span></div>
+        <div><span class="ts2">[08:44:15]</span> <span class="arq">Arquivista entrou no jogo.</span></div>
+        <div><span class="ts2">[08:44:22]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">bom dia, servidor vazio.</span></div>
+        <div><span class="ts2">[08:44:28]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">hoje é o dia do IX.</span></div>
+        <div style="margin:4px 0;"></div>
+        <div><span class="ts2">[08:51:03]</span> <span class="usr">Visitante_01 entrou no jogo.</span></div>
+        <div><span class="ts2">[08:51:11]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">ei! você é o arquivista?</span></div>
+        <div><span class="ts2">[08:51:19]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">depende de quem pergunta.</span></div>
+        <div><span class="ts2">[08:51:30]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">encontrei o enigma no site do atlas</span></div>
+        <div><span class="ts2">[08:51:38]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">ah.</span></div>
+        <div><span class="ts2">[08:51:42]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">então você está procurando o projeto ix.</span></div>
+        <div><span class="ts2">[08:51:55]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">o que é isso exatamente</span></div>
+        <div><span class="ts2">[08:52:04]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">é o que existe entre o oito e o dez.</span></div>
+        <div><span class="ts2">[08:52:09]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">existe no jornal. existe neste servidor. existe em todo lugar onde alguém para.</span></div>
+        <div><span class="ts2">[08:52:14]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">não entendi</span></div>
+        <div><span class="ts2">[08:52:18]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">você vai entender.</span></div>
+        <div style="margin:4px 0;"></div>
+        <div><span class="ts2">[08:52:30]</span> <span style="color:var(--dim)">[INFO] Arquivista teleportou para coordenadas X:-312 Y:11 Z:88</span></div>
+        <div><span class="ts2">[08:52:35]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">vem aqui.</span></div>
+        <div><span class="ts2">[08:52:41]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">que lugar é esse</span></div>
+        <div><span class="ts2">[08:52:45]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">entre o oito e o dez.</span></div>
+        <div><span class="ts2">[08:52:48]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">nas paredes desta caverna há uma inscrição.</span></div>
+        <div><span class="ts2">[08:52:52]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">ninguém colocou ela lá.</span></div>
+        <div><span class="ts2">[08:53:04]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">??????</span></div>
+        <div><span class="ts2">[08:53:09]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">LACUNA existe em todo sistema onde alguém esquece de preencher.</span></div>
+        <div><span class="ts2">[08:53:14]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">este servidor tem 9 lacunas. conta as tochas.</span></div>
+        <div style="margin:4px 0;"></div>
+        <div><span class="ts2">[08:53:22]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">contei 13</span></div>
+        <div><span class="ts2">[08:53:26]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">isso.</span></div>
+        <div><span class="ts2">[08:53:31]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">o projeto tem 13 fragmentos. não 9. eu menti sobre o 9.</span></div>
+        <div><span class="ts2">[08:53:36]</span> <span class="usr">&lt;Visitante_01&gt;</span> <span style="color:var(--tx)">por que mentiu</span></div>
+        <div><span class="ts2">[08:53:40]</span> <span class="arq">&lt;Arquivista&gt;</span> <span style="color:var(--tx)">para ver se você contava.</span></div>
+        <div style="margin:4px 0;"></div>
+        <div><span class="ts2">[08:54:12]</span> <span style="color:var(--dim)">[INFO] Arquivista saiu do jogo.</span></div>
+        <div><span class="ts2">[08:54:15]</span> <span class="sys2">[SISTEMA] sessão do arquivista encerrada.</span></div>
+        <div><span class="ts2">[08:54:15]</span> <span class="sys2">[SISTEMA] coordenadas da caverna: X:-312 Y:11 Z:88</span></div>
+        <div><span class="ts2">[08:54:16]</span> <span class="sys2">[SISTEMA] próximo fragmento: procure onde os bots não chegam.</span></div>
+        <span class="sep">─────────────────────────────────────────────────────────</span>
+        <div class="fin">── fim do log de sessão</div>
+        <div style="margin-top:8px;font-size:10px;color:var(--dim);">
+          [ nota: a coordenada Y:11 não é coincidência. o arquivista gosta de deixar marcas. ]
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ███████.bin (corrupted) -->
+  <div class="window" id="win-bin" style="left:220px;top:110px;width:460px;height:360px;">
+    <div class="win-bar" ondblclick="toggleMax('bin')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('bin')">✕</div>
+        <div class="win-dot min" onclick="minWin('bin')">─</div>
+        <div class="win-dot max" onclick="toggleMax('bin')">□</div>
+      </div>
+      <span class="win-icon" style="color:var(--redbr)">⚠</span>
+      <span class="win-title" style="color:var(--redbr)">███████.bin — CORROMPIDO</span>
+    </div>
+    <div class="win-body">
+      <div class="corrupt-view" id="corruptView">
+        <div class="corrupt-hex" id="corruptHex">
+          4e c3 b5 6f 20 61 62 72 61 20 65 73 73 65 20 61 72 71 75 69 76 6f 2e 0a
+          45 6c 65 20 6e c3 a3 6f 20 65 73 74 c3 a1 20 76 61 7a 69 6f 2e 0a
+          ff f0 00 ff 00 ff f0 00 41 42 49 53 4d 4f 0a ff f0 00 ff
+          43 6f 6d 70 6c 65 74 61 6d 65 6e 74 65 20 76 61 7a 69 6f 2e 0a
+          ff 00 ff 00 ff 00 ff 00 ff 00 ff 00 ff 00 ff 00 ff
+        </div>
+        <div class="corrupt-msg" id="corruptMsg">ARQUIVO CORROMPIDO</div>
+        <button class="corrupt-btn" onclick="triggerGlitch()">[ tentar recuperar dados ]</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="window" id="win-terminal" style="left:200px;top:100px;width:560px;height:400px;">
+    <div class="win-bar" ondblclick="toggleMax('terminal')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('terminal')">✕</div>
+        <div class="win-dot min" onclick="minWin('terminal')">─</div>
+        <div class="win-dot max" onclick="toggleMax('terminal')">□</div>
+      </div>
+      <span class="win-icon">⬛</span>
+      <span class="win-title">Terminal — atlas@ix</span>
+    </div>
+    <div class="win-body" style="overflow:hidden;">
+      <div class="term">
+        <div class="term-out" id="termOut">
+          <div class="tl ok">ATLAS OS v0.9 · Terminal</div>
+          <div class="tl dim">────────────────────────────────────</div>
+          <div class="tl">digite <span style="color:#58a6ff">help</span> para listar os comandos disponíveis.</div>
+          <div class="tl dim" style="margin-top:4px;">_</div>
+        </div>
+        <div class="term-input">
+          <span class="term-prompt">atlas@ix:~$</span>
+          <input id="termCmd" type="text" autocomplete="off" spellcheck="false" placeholder="">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PASTA_RESTRITA/ -->
+  <div class="window" id="win-restrita" style="left:240px;top:120px;width:480px;height:420px;">
+    <div class="win-bar" ondblclick="toggleMax('restrita')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('restrita')">✕</div>
+        <div class="win-dot min" onclick="minWin('restrita')">─</div>
+        <div class="win-dot max" onclick="toggleMax('restrita')">□</div>
+      </div>
+      <span class="win-icon">📁</span>
+      <span class="win-title">PASTA_RESTRITA/ — Explorador</span>
+    </div>
+    <div class="win-body" id="restrBody">
+      <div class="log-view" style="padding:32px 20px;text-align:center;">
+        <div style="font-size:32px;margin-bottom:16px;">🔒</div>
+        <div style="color:var(--redbr);letter-spacing:.2em;margin-bottom:8px;">ACESSO NEGADO</div>
+        <div style="color:var(--dim);font-size:11px;line-height:2;">
+          Esta pasta requer autorização de nível IX.<br>
+          Leia os documentos do arquivo primeiro.<br>
+          <span id="restrCount" style="color:var(--acc);">0 / 3 documentos verificados.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTA_PESSOAL.doc -->
+  <div class="window" id="win-nota" style="left:180px;top:90px;width:560px;height:520px;">
+    <div class="win-bar" ondblclick="toggleMax('nota')">
+      <div class="win-dots">
+        <div class="win-dot cls" onclick="closeWin('nota')">✕</div>
+        <div class="win-dot min" onclick="minWin('nota')">─</div>
+        <div class="win-dot max" onclick="toggleMax('nota')">□</div>
+      </div>
+      <span class="win-icon">📝</span>
+      <span class="win-title">NOTA_PESSOAL.doc — Atlas OS</span>
+    </div>
+    <div class="win-body">
+      <div class="pw">
+        <div class="paper">
+          <div class="paper-lbl">[ não classificado · encontrado agora ]</div>
+          <p class="lead">Eu não sei quem você é.</p>
+          <p>Mas sei algumas coisas sobre você.<br>
+          Sei que você para. Que lê o código-fonte das páginas.<br>
+          Que decodifica hex às três da manhã porque "parece importante".<br>
+          Que olha o robots.txt de sites aleatórios por hábito.<br>
+          Que inspeciona headers HTTP antes de ler o conteúdo.</p>
+          <p>Você é exatamente o tipo de pessoa para quem o Projeto IX foi feito.</p>
+          <p>Não foi feito para quem passa por cima.<br>
+          Foi feito para quem olha embaixo do tapete.<br>
+          Para quem percebe que o silêncio também tem forma.<br>
+          Para quem conta as tochas numa caverna de Minecraft por curiosidade.</p>
+          <p>O Atlas é feito de momentos.<br>
+          Você acabou de fazer parte de um.</p>
+          <p><em>Seja bem-vindo ao registro permanente.</em></p>
+          <div class="paper-sig">— O Arquivista<br>[ esta nota não estava aqui antes de você abrir os outros arquivos ]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /desktop -->
+
+<!-- ═══ TASKBAR ═══ -->
+<div id="taskbar">
+  <div class="tb-logo" onclick="openWin('terminal')">⬛ ATLAS OS</div>
+  <div class="tb-sep"></div>
+  <div class="tb-wins" id="tbWins"></div>
+  <div class="tb-sep"></div>
+  <div class="tb-right">
+    <div class="tb-status"><div class="tb-dot"></div><span style="letter-spacing:.1em;font-size:9px;color:var(--gbr);">online</span></div>
+    <div id="tbClock">--:--</div>
+  </div>
 </div>
 
 <script>
 (function(){
 'use strict';
 
-// ─── UTILS ───────────────────────────────────────────────────
-const $  = id => document.getElementById(id);
-const qs = s  => document.querySelector(s);
+// ─── UTILS ─────────────────────────────────────
+const $ = id => document.getElementById(id);
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ─── BOOT ────────────────────────────────────────────────────
+// ─── BOOT ──────────────────────────────────────
 const BOOT = [
-  {t:'  ',s:0},{t:'',s:0},
-  {t:'    ╔═══════════════════════════════════════════╗',s:18,c:'hi'},
-  {t:'    ║   A T L A S  /  A R Q U I V O  v0.11.0  ║',s:18,c:'hi'},
-  {t:'    ╚═══════════════════════════════════════════╝',s:18,c:'hi'},
   {t:'',s:0},
-  {t:'  Inicializando sistema de arquivos...',s:22},
-  {t:'  Verificando integridade dos fragmentos...',s:22},
-  {t:'  > FRAGMENTOS_VERIFICADOS  :  13 / 13  ✓',s:14,c:'ok'},
+  {t:'    ┌─────────────────────────────────────────┐',s:12,c:'hi'},
+  {t:'    │    A T L A S  O S  v 0 . 9  [ B E T A ] │',s:12,c:'hi'},
+  {t:'    │    Sistema de Arquivo · Projeto IX        │',s:12,c:'hi'},
+  {t:'    └─────────────────────────────────────────┘',s:12,c:'hi'},
   {t:'',s:0},
-  {t:'  Carregando credenciais de acesso...',s:22},
-  {t:'  > USUARIO    : visitante_autorizado',s:14,c:'dim'},
-  {t:'  > NIVEL      : IX / XIII',s:14,c:'dim'},
-  {t:'  > SESSAO     : ativa',s:14,c:'dim'},
+  {t:'  Inicializando kernel de acesso...',s:30},
+  {t:'  Montando sistema de arquivos...           [ OK ]',s:25,c:'ok'},
+  {t:'  Carregando módulos de memória...          [ OK ]',s:25,c:'ok'},
+  {t:'  Verificando integridade dos dados...      [ OK ]',s:25,c:'ok'},
+  {t:'  Conectando ao arquivo principal...        [ OK ]',s:25,c:'ok'},
   {t:'',s:0},
-  {t:'  Descriptografando arquivos selecionados...',s:20},
+  {t:'  Descriptografando fragmentos...',s:30},
   {t:'  [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%',s:0,id:'bar'},
   {t:'',s:0},
-  {t:'─────────────────────────────────────────────────',s:12,c:'dim'},
-  {t:'  ACESSO CONCEDIDO.',s:18,c:'ok'},
-  {t:'  Bem-vindo ao Projeto IX.',s:18,c:'ok'},
-  {t:'',s:30},
+  {t:'  AVISO: 1 arquivo corrompido detectado.',s:18,c:'warn'},
+  {t:'  Continuando inicialização...',s:24,c:'warn'},
+  {t:'',s:0},
+  {t:'  ─────────────────────────────────────────────',s:10,c:'dim'},
+  {t:'  ACESSO CONCEDIDO.',s:20,c:'ok'},
+  {t:'  Bem-vindo ao Projeto IX, Visitante.',s:20,c:'ok'},
+  {t:'  Dica: dê duplo clique nos ícones para abrir.',s:20},
+  {t:'',s:40},
 ];
 
 let bootDone = false;
 const bootEl = $('boot');
-const pre    = $('bootPre');
-const appEl  = $('app');
+const pre = $('bootPre');
 
-function launchApp(){
+function launchDesktop(){
   if(bootDone) return;
   bootDone = true;
-  bootEl.style.transition = 'opacity .5s';
-  bootEl.style.opacity = '0';
-  setTimeout(()=>{ bootEl.style.display='none'; appEl.classList.remove('off'); $('cmd').focus(); }, 520);
+  bootEl.style.transition='opacity .5s';
+  bootEl.style.opacity='0';
+  setTimeout(()=>{
+    bootEl.style.display='none';
+    $('desktop').style.display='block';
+    $('taskbar').style.display='flex';
+    $('termCmd').focus();
+    initClock();
+    renderTaskbar();
+  },520);
 }
-$('bootSkip').addEventListener('click', launchApp);
-bootEl.addEventListener('click', launchApp);
+
+$('bootSkip').addEventListener('click',launchDesktop);
+document.addEventListener('keydown', e=>{ if(!bootDone) launchDesktop(); });
 
 async function runBoot(){
-  let html = '';
-  const FILLS = ['░','▒','▓','█'];
+  let html='';
   for(let i=0;i<BOOT.length;i++){
     if(bootDone) return;
-    const b = BOOT[i];
-    if(b.id === 'bar'){
-      // animate bar
-      for(let p=0;p<=100;p+=4){
+    const b=BOOT[i];
+    if(b.id==='bar'){
+      for(let p=0;p<=100;p+=3){
         if(bootDone) return;
-        const filled = Math.round(p/100*36);
-        const bar = '█'.repeat(filled) + '░'.repeat(36-filled);
-        const tmp = html + `<span class="${p===100?'ok':''}">[${bar}] ${p}%</span>\n`;
-        pre.innerHTML = tmp;
-        await sleep(28);
+        const f=Math.round(p/100*36);
+        const bar='█'.repeat(f)+'░'.repeat(36-f);
+        pre.innerHTML=html+`<span class="${p===100?'ok':''}">[${bar}] ${p}%</span>\n`;
+        await sleep(22);
       }
-      html += `<span class="ok">[████████████████████████████████████] 100%</span>\n`;
+      html+=`<span class="ok">[████████████████████████████████████] 100%</span>\n`;
     } else {
-      const line = b.c ? `<span class="${b.c}">${esc(b.t)}</span>` : esc(b.t);
-      html += line + '\n';
-      pre.innerHTML = html;
+      html+=(b.c?`<span class="${b.c}">${esc(b.t)}</span>`:esc(b.t))+'\n';
+      pre.innerHTML=html;
     }
     await sleep(b.s);
   }
-  await sleep(700);
-  launchApp();
+  await sleep(600);
+  launchDesktop();
 }
-function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 runBoot();
 
-// ─── FILES ───────────────────────────────────────────────────
-const WORDS = [
-  ['I',   'OCULTO',    'a mensagem que se esconde no que parece silêncio'],
-  ['II',  'APAGADO',   'a chave que estava escrita nas margens, esperando'],
-  ['III', 'ONZE',      'o número que o jornal nunca imprimiu'],
-  ['IV',  'SENTINELA', 'quem esperou na hora certa, no lugar certo'],
-  ['V',   'ESPELHO',   'o reflexo do projeto em si mesmo'],
-  ['VI',  'CIFRADO',   'o que o erro escondia, em hex, na margem'],
-  ['VII', 'INTENCAO',  'a nona intenção — o que originou tudo isso'],
-  ['VIII','RASTRO',    'o que o guardião das portas deixou nas margens'],
-  ['IX',  'ABISMO',    'o fundo da armadilha, que só quem olha encontra'],
-  ['X',   'SINAL',     'o que o servidor envia antes de qualquer página'],
-  ['XI',  'MARCA',     'o fragmento escondido no lugar mais visitado'],
-  ['XII', 'ORIGEM',    'a assinatura que quem construiu deixou para humanos'],
-  ['XIII','LACUNA',    'o fragmento sem endereço, no lugar que o número indica'],
-];
-
-const DECRYPT = {
-  OCULTO:   'fragmento I — encontrado no espectrograma. o silêncio tinha forma.',
-  APAGADO:  'fragmento II — acrosstico nas margens do arquivo. sete letras, sete frases.',
-  ONZE:     'fragmento III — o número que o jornal recusou imprimir. existe em /11.',
-  SENTINELA:'fragmento IV — chegou às 23:05 e saiu às 23:16. exato.',
-  ESPELHO:  'fragmento V — estava lá desde o início, a 18% de opacidade.',
-  CIFRADO:  'fragmento VI — 63 69 66 72 61 64 6f. o erro guardava uma mensagem.',
-  INTENCAO: 'fragmento VII — aquilo que precede qualquer projeto. estava no arquivo.',
-  RASTRO:   'fragmento VIII — base64 no robots.txt. o guardião das portas.',
-  ABISMO:   'fragmento IX — cifrado com a mesma chave do fragmento II. bom trabalho.',
-  SINAL:    'fragmento X — X-Atlas-Sinal. o servidor fala antes de carregar.',
-  MARCA:    'fragmento XI — 4D 41 52 43 41. estava no próprio jornal, o tempo todo.',
-  ORIGEM:   'fragmento XII — humans.txt. primeiras letras de cada linha.',
-  LACUNA:   'fragmento XIII — LPCAND. a porta era o número do projeto.',
+// ─── WINDOW MANAGER ────────────────────────────
+let zTop=10;
+const winStates={};// id→{open,minimized,maximized,prevPos}
+const WIN_META={
+  carta:     {label:'CARTA.doc',        icon:'📄'},
+  arquivo:   {label:'ARQUIVO_ATLAS/',   icon:'📁'},
+  registro:  {label:'REGISTRO_IX.doc', icon:'📄'},
+  entrada:   {label:'ENTRADA_FINAL.doc',icon:'📄'},
+  relatorio: {label:'RELATORIO.doc',   icon:'📄'},
+  fragmentos:{label:'FRAGMENTOS.log',  icon:'📋'},
+  minecraft: {label:'MINECRAFT.log',   icon:'🎮'},
+  bin:       {label:'███████.bin',     icon:'⚠️'},
+  terminal:  {label:'Terminal',        icon:'⬛'},
+  restrita:  {label:'RESTRITA/',       icon:'📁'},
+  nota:      {label:'NOTA_PESSOAL.doc',icon:'📝'},
 };
 
-// ─── FILE STATE ───────────────────────────────────────────────
-const opened = new Set();
-
-function updateCount(){
-  const docs = ['carta','palavras','registro','entrada'];
-  const n = docs.filter(k=>opened.has(k)).length;
-  $('fc').textContent = n + ' / 4 abertos';
-  if(n >= 4) setTimeout(unlockSecret, 1200);
+function openWin(id){
+  const w=$('win-'+id);
+  if(!w) return;
+  const s=winStates[id]||{};
+  s.open=true;
+  s.minimized=false;
+  winStates[id]=s;
+  w.style.display='flex';
+  w.classList.remove('minimized');
+  focusWin(id);
+  trackOpened(id);
+  renderTaskbar();
 }
 
-function unlockSecret(){
-  const el = $('fiSecret');
-  if(!el.classList.contains('show')){
-    el.classList.add('show');
-    tprint('── arquivo desbloqueado → NOTA_PESSOAL.doc ──','ok');
+function closeWin(id){
+  const w=$('win-'+id);
+  if(!w) return;
+  w.style.display='none';
+  w.classList.remove('maximized');
+  const s=winStates[id]||{};
+  s.open=false;s.minimized=false;s.maximized=false;
+  winStates[id]=s;
+  renderTaskbar();
+}
+
+function minWin(id){
+  const w=$('win-'+id);
+  if(!w) return;
+  w.style.display='none';
+  w.classList.add('minimized');
+  const s=winStates[id]||{};
+  s.minimized=true;
+  winStates[id]=s;
+  renderTaskbar();
+}
+
+function toggleMax(id){
+  const w=$('win-'+id);
+  if(!w) return;
+  const s=winStates[id]||{};
+  if(w.classList.contains('maximized')){
+    w.classList.remove('maximized');
+    if(s.prevPos){ w.style.left=s.prevPos.l; w.style.top=s.prevPos.t; w.style.width=s.prevPos.w; w.style.height=s.prevPos.h; }
+    s.maximized=false;
+  } else {
+    s.prevPos={l:w.style.left,t:w.style.top,w:w.style.width,h:w.style.height};
+    w.classList.add('maximized');
+    s.maximized=true;
+  }
+  winStates[id]=s;
+  focusWin(id);
+}
+
+function focusWin(id){
+  document.querySelectorAll('.window').forEach(el=>el.classList.remove('active'));
+  const w=$('win-'+id);
+  if(!w) return;
+  zTop++;w.style.zIndex=zTop;
+  w.classList.add('active');
+}
+
+// Draggable windows
+document.querySelectorAll('.win-bar').forEach(bar=>{
+  const win=bar.closest('.window');
+  let sx,sy,sl,st;
+  bar.addEventListener('mousedown',e=>{
+    if(e.target.closest('.win-dot')) return;
+    if(win.classList.contains('maximized')) return;
+    const id=win.id.replace('win-','');
+    focusWin(id);
+    sx=e.clientX; sy=e.clientY;
+    sl=parseInt(win.style.left)||0;
+    st=parseInt(win.style.top)||0;
+    bar.style.cursor='grabbing';
+    const mm=e2=>{
+      win.style.left=(sl+e2.clientX-sx)+'px';
+      win.style.top=Math.max(0,st+e2.clientY-sy)+'px';
+    };
+    const mu=()=>{
+      bar.style.cursor='grab';
+      document.removeEventListener('mousemove',mm);
+      document.removeEventListener('mouseup',mu);
+    };
+    document.addEventListener('mousemove',mm);
+    document.addEventListener('mouseup',mu);
+    e.preventDefault();
+  });
+  // focus on click
+  win.addEventListener('mousedown',()=>focusWin(win.id.replace('win-','')));
+});
+
+// ─── TASKBAR ───────────────────────────────────
+function renderTaskbar(){
+  const wins=$('tbWins');
+  wins.innerHTML='';
+  Object.entries(winStates).forEach(([id,s])=>{
+    if(!s.open && !s.minimized) return;
+    const m=WIN_META[id]||{label:id,icon:'📄'};
+    const btn=document.createElement('div');
+    btn.className='tb-btn '+(s.minimized?'minimized':'open');
+    btn.textContent=m.icon+' '+m.label;
+    btn.onclick=()=>{
+      if(s.minimized){ openWin(id); }
+      else { minWin(id); }
+    };
+    wins.appendChild(btn);
+  });
+}
+
+function initClock(){
+  function tick(){
+    const d=new Date();
+    const t=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+    $('tbClock').textContent=t;
+  }
+  tick();
+  setInterval(tick,15000);
+}
+
+// ─── PROGRESS TRACKING ─────────────────────────
+const opened=new Set();
+const MAIN_DOCS=['carta','registro','entrada','relatorio'];
+let restrUnlocked=false;
+
+function trackOpened(id){
+  opened.add(id);
+  const n=MAIN_DOCS.filter(k=>opened.has(k)).length;
+  const rc=$('restrCount');
+  if(rc) rc.textContent=n+' / 3 documentos verificados.';
+  if(n>=3 && !restrUnlocked) unlockRestrita();
+  if(n>=2 && !$('iconNota').classList.contains('show')){
+    setTimeout(unlockNota,1500);
   }
 }
 
-// ─── VIEWER ──────────────────────────────────────────────────
-function openFile(key){
-  const v = $('viewer');
-  v.innerHTML = '';
-  // activate sidebar item
-  document.querySelectorAll('.fi').forEach(el=>el.classList.remove('active'));
-  const fi = qs(`.fi[data-f="${key}"]`);
-  if(fi){ fi.classList.add('active'); const b=fi.querySelector('.fi-badge'); if(b)b.remove(); }
-
-  opened.add(key);
-  updateCount();
-
-  const div = document.createElement('div');
-  div.className = 'dv';
-  div.innerHTML = buildContent(key);
-  v.appendChild(div);
-
-  // redacted handlers
-  div.querySelectorAll('.rx').forEach(el=>{
-    el.addEventListener('click',()=>{
-      if(!el.classList.contains('open')){
-        el.classList.add('open');
-        tprint('fragmento classificado revelado.','dim');
-      }
-    });
-  });
-  v.scrollTop = 0;
+function unlockNota(){
+  const ic=$('iconNota');
+  if(ic.classList.contains('show')) return;
+  ic.classList.add('show');
+  tPrint('── novo arquivo detectado: NOTA_PESSOAL.doc ──','ok');
 }
 
-function buildContent(key){
-  const headers = {
-    carta:   ['CARTA_DO_ARQUIVISTA.doc',   'DOCUMENTO · CLASSIFICADO · ATLAS/IX','Criado: 13/05/2026 · Selado: 23:11'],
-    palavras:['PALAVRAS_ENCONTRADAS.log',  'SISTEMA LOG · ATLAS/IX','Gerado: 13/05/2026 23:11:55'],
-    registro:['REGISTRO_IX.doc',           'DOCUMENTO · RESTRITO · ATLAS/IX','Última modificação: 13/05/2026'],
-    entrada: ['ENTRADA_FINAL.doc',         'DOCUMENTO · ARQUIVO · ATLAS/IX','Selado: 13/05/2026 23:11'],
-    nota:    ['NOTA_PESSOAL.doc',          'NÃO CLASSIFICADO · PESSOAL','Encontrado: agora'],
-  };
-  const h = headers[key]||[key,'',''];
-
-  const head = `<div class="dv-head">
-    <span class="dv-title">${h[0]}</span>
-    <span class="dv-meta">${h[1]}<br>${h[2]}</span>
-  </div>`;
-
-  if(key==='palavras') return head + logHTML();
-  return head + paperHTML(key);
+function unlockRestrita(){
+  restrUnlocked=true;
+  const ic=$('iconRestrita');
+  ic.classList.remove('locked');
+  ic.ondblclick=()=>openWin('restrita');
+  $('restrBody').innerHTML=`
+    <div class="explorer">
+      <div class="exp-toolbar"><span style="color:var(--dim)">📁</span><span>PASTA_RESTRITA</span><span style="color:var(--dim)">›</span><span style="color:var(--acc)">autorizado</span></div>
+      <div class="exp-files">
+        <div class="exp-file" ondblclick="openResFile('origem')">
+          <div class="exp-file-ico">📄</div>
+          <div class="exp-file-name">ORIGEM_DO_ATLAS.txt</div>
+          <div class="exp-file-size">0.9 KB</div>
+        </div>
+        <div class="exp-file" ondblclick="openResFile('mapa')">
+          <div class="exp-file-ico">🗺️</div>
+          <div class="exp-file-name">MAPA_FRAGMENTOS.txt</div>
+          <div class="exp-file-size">1.2 KB</div>
+        </div>
+        <div class="exp-file" ondblclick="openResFile('proxima')">
+          <div class="exp-file-ico">📄</div>
+          <div class="exp-file-name">PROXIMA_FASE.txt</div>
+          <div class="exp-file-size">0.6 KB</div>
+        </div>
+      </div>
+      <div class="exp-status">3 itens · acesso autorizado</div>
+    </div>`;
+  tPrint('── pasta desbloqueada: PASTA_RESTRITA/ ──','ok');
 }
 
-function logHTML(){
-  let s = '<div class="lc">';
-  s += '<span class="sep">── iniciando verificação de fragmentos ──</span>';
-  WORDS.forEach(([num,word,gloss],i)=>{
-    const ts = `2026-05-13 23:11:${(42+i).toString().padStart(2,'0')}`;
-    s += `<div>[<span class="ts">${ts}</span>]  <span class="key">FRAGMENTO_${num}</span>  <span class="val">${word}</span>   <span class="chk">✓ VERIFICADO</span></div>`;
-  });
-  s += '<span class="sep">────────────────────────────────────────</span>';
-  s += '<div class="fin">── 13 / 13 fragmentos verificados</div>';
-  s += '<div class="fin">── PROJETO IX : ACESSO COMPLETO</div>';
-  s += '</div>';
-  return s;
+function tryRestrita(){
+  if(restrUnlocked){ openWin('restrita'); return; }
+  const n=MAIN_DOCS.filter(k=>opened.has(k)).length;
+  tPrint(`acesso negado. leia mais ${3-n} documento(s) primeiro.`,'err');
 }
 
-const PAPERS = {
-  carta: {stamp:'Confidencial', body:`
-    <div class="paper-lbl">[ carta do arquivista — acesso liberado ]</div>
-    <p class="lead">O Arquivista não esperava que você chegasse até aqui.</p>
-    <p>Mas você chegou.<br>E isso muda tudo.</p>
-    <p>Deixa eu te contar o que o Projeto IX realmente é.</p>
-    <p>Não é uma edição do jornal. Nunca foi.<br>
-    É o nome que dei para o espaço entre as coisas.<br>
-    Entre o oito e o dez. Entre o que foi publicado e o que ficou guardado.<br>
-    Entre o que o Atlas mostra, e o que ele carrega em silêncio.</p>
-    <p>Você percorreu esse espaço inteiro.<br>
-    Treze palavras. Treze caminhos.<br>
-    Cada uma em um lugar diferente — alguns óbvios, a maioria não.</p>
-    <p>O Atlas é uma comunidade.<br>
-    Mas é também um repositório de momentos que a maioria das comunidades deixa passar.<br>
-    As edições do jornal são registros.<br>
-    Os espaços entre elas — o que não foi dito, o que ficou entre os dias —<br>
-    são tão reais quanto qualquer palavra encontrada numa grade.</p>
-    <p>Você acabou de catalogar um desses momentos.</p>
-    <p><strong>O Projeto IX sempre existiu.<br>Você só acabou de encontrá-lo.</strong></p>
-    <p>Obrigado por procurar o que estava oculto.<br>
-    Obrigado por ler o que estava entre as linhas.<br>
-    Obrigado por ter chegado a tempo.</p>
-    <div class="paper-sig">— O Arquivista</div>
-    <div class="paper-date">[carta selada em 13/05/2026 · 23:11]</div>
-  `},
-  registro: {stamp:'Restrito', body:`
-    <div class="paper-lbl">[ atlas/registro — projeto ix ]</div>
-    <div class="paper-ttl">Sobre a Origem</div>
-    <p>O Projeto IX foi concebido antes da primeira edição.<br>
-    Não como conteúdo. Como intenção.</p>
-    <p>Nove era o número escolhido.<br>
-    Nove nunca chegou — pelo menos, não da forma esperada.</p>
-    <p>O que foi construído em seu lugar não tem nome nos registros oficiais.<br>
-    Tem apenas uma série de entradas espalhadas,<br>
-    esperando quem soubesse procurar.</p>
-    <p>O primeiro fragmento escondido foi <span class="rx">████ OCULTO ████ no arquivo de áudio</span>.<br>
-    O último foi <span class="rx">████ LACUNA ████ na porta que o número indica</span>.</p>
-    <p>Entre eles: treze caminhos, treze respostas,<br>
-    e um arquivo que só se abre quando todos chegam.</p>
-    <p>O Arquivista sabe onde cada um está.<br>
-    O Arquivista sempre soube.</p>
-    <div class="paper-sig">— Registro encerrado</div>
-    <div class="paper-date">[documento incompleto · seção 2 suprimida]</div>
-  `},
-  entrada: {stamp:'Selado', body:`
-    <div class="paper-lbl">[ atlas/arquivo — entrada final ]</div>
-    <div class="paper-ttl">O Fim do Percurso</div>
-    <p>O Atlas não é um servidor.<br>
-    É um repositório de momentos.</p>
-    <p>O Projeto IX existe.<br>
-    Não como nona edição.<br>
-    Como aquilo que precede qualquer projeto.<br>
-    Uma palavra. Está em toda parte.</p>
-    <p>Essa entrada é a última.<br>
-    Não porque o arquivo acabou —<br>
-    mas porque você chegou onde o arquivo começa.</p>
-    <p>A carta completa estava aqui.<br>
-    Agora que você a leu,<br>
-    o arquivo pode ser selado novamente.</p>
-    <p><em>Até o próximo que souber procurar.</em></p>
-    <div class="paper-sig">— O Arquivista</div>
-    <div class="paper-date">[entrada selada em 13/05/2026]</div>
-  `},
-  nota: {stamp:null, body:`
-    <div class="paper-lbl">[ nota pessoal — não classificada ]</div>
-    <div class="paper-ttl">Para Quem Chegou Até Aqui</div>
-    <p>Não era para ter uma nota pessoal.<br>
-    Mas você abriu tudo. Então merece isso.</p>
-    <p>Eu não sei quem você é.<br>
-    Mas sei que você é o tipo de pessoa que para.<br>
-    Que lê o código-fonte das páginas.<br>
-    Que decodifica hex às três da manhã.<br>
-    Que volta ao site às 23:05 só pra ver se acontece algo diferente.</p>
-    <p>Esse projeto foi feito para você.<br>
-    Especificamente.</p>
-    <p>O Atlas existe porque existe gente que acredita<br>
-    que os espaços entre as coisas importam tanto quanto as coisas em si.<br>
-    Você acabou de provar que essa gente existe.</p>
-    <p>Obrigado por jogar.</p>
-    <div class="paper-sig">— O Arquivista<br><em style="font-style:italic;opacity:.7">(desta vez, sem a máscara)</em></div>
-    <div class="paper-date">[nota encontrada em: agora]</div>
-  `},
+// restrita sub-files (open in terminal output for simplicity)
+const RES_FILES={
+  origem:`ORIGEM_DO_ATLAS.txt
+─────────────────────────────────────────────
+O Atlas começou como uma ideia simples:
+registrar o que as comunidades normalmente deixam passar.
+
+O jornal foi o primeiro passo.
+Cada edição documenta um fragmento do que foi vivido.
+
+O Projeto IX foi o segundo passo:
+provar que o arquivo também existe no que não foi publicado.
+Nas lacunas. Nos espaços. No entre.
+
+Entre as edições, existe um arquivo paralelo.
+Este sistema operacional é parte dele.
+Esta conversa é parte dele.
+─────────────────────────────────────────────`,
+
+  mapa:`MAPA_FRAGMENTOS.txt
+─────────────────────────────────────────────
+I   OCULTO     → espectrograma de áudio (som_ambiente)
+II  APAGADO    → acrosstico em nota_geraldo.txt
+III ONZE       → página /11 do jornal
+IV  SENTINELA  → /vigilia · janela 23:05–23:16
+V   ESPELHO    → índice do jornal · opacidade 18%
+VI  CIFRADO    → /404 · comentário hex
+VII INTENCAO   → /arquivo · entrada final
+VIII RASTRO    → robots.txt · base64
+IX  ABISMO     → /admin · vigenère
+X   SINAL      → HTTP header X-Atlas-Sinal
+XI  MARCA      → index.html · comentário hex
+XII ORIGEM     → humans.txt · primeiras letras
+XIII LACUNA    → /ix · código-fonte · LPCAND
+─────────────────────────────────────────────
+13 locais. 13 métodos distintos. 1 arquivo.`,
+
+  proxima:`PROXIMA_FASE.txt
+─────────────────────────────────────────────
+Você chegou ao fim do Projeto IX.
+
+Mas o arquivo não para.
+
+O jornal continua.
+As edições aparecem e desaparecem.
+O IX existirá entre todas elas.
+
+Se você quiser fazer parte do registro:
+→ cacapalavras-atlas.vercel.app
+→ O enigma ainda aceita novos registros.
+
+Até a próxima lacuna.
+─────────────────────────────────────────────`
 };
 
-function paperHTML(key){
-  const p = PAPERS[key];
-  if(!p) return '';
-  const stamp = p.stamp ? `<div class="stamp">${p.stamp}</div>` : '';
-  return `<div class="pw"><div class="paper">${stamp}${p.body}</div></div>`;
-}
+window.openResFile=function(key){
+  const txt=RES_FILES[key];
+  if(!txt) return;
+  tPrint(txt,'dim');
+  // also open in a small modal-style popup
+  openWin('terminal');
+};
 
-// ─── CORRUPTED FILE ──────────────────────────────────────────
-let binBusy = false;
-const GLITCH_MSGS = [
+// ─── CORRUPTED FILE ────────────────────────────
+let glitchCount=0;
+const GLITCH_MSGS=[
   'EU AINDA ESTOU AQUI',
   'NÃO LEIA ISSO',
   'O ARQUIVO NÃO ESTÁ VAZIO',
   'VOCÊ NÃO DEVERIA TER ABERTO',
+  'ABISMO',
+  'LACUNA',
 ];
-function openBin(){
-  if(binBusy) return;
-  binBusy = true;
-  const overlay = $('glitchOverlay');
-  const app     = $('app');
-  app.classList.add('glitching');
-  overlay.textContent = GLITCH_MSGS[Math.floor(Math.random()*GLITCH_MSGS.length)];
-  overlay.style.opacity = '.9';
+
+window.triggerGlitch=function(){
+  glitchCount++;
+  const overlay=$('glitchOverlay');
+  const msg=GLITCH_MSGS[(glitchCount-1)%GLITCH_MSGS.length];
+  overlay.textContent=msg;
+  overlay.style.opacity='.92';
+  const win=$('win-bin');
+  win.classList.add('glitching');
   setTimeout(()=>{
-    overlay.style.transition = 'opacity .12s';
-    overlay.style.opacity = '0';
-    app.classList.remove('glitching');
-    tprint('> arquivo corrompido — leitura impossível.','err');
-    tprint('> fragmento de dados detectado. conteúdo ilegível.','dim');
-    setTimeout(()=>{ binBusy = false; overlay.style.transition = ''; },300);
-  }, 320);
-}
+    overlay.style.opacity='0';
+    win.classList.remove('glitching');
+    if(glitchCount>=4){
+      $('corruptMsg').textContent='DADOS PARCIALMENTE RECUPERADOS';
+      $('corruptMsg').style.color='var(--amb)';
+      $('corruptHex').innerHTML=`<span style="color:var(--amb)">4e c3 b5 6f 20 61 62 72 61...</span><br>
+        <span style="color:var(--gbr)">FRAGMENTO RECUPERADO:</span><br>
+        <span style="color:var(--tx)">"Este arquivo existe desde antes do projeto.<br>
+        O que você chamou de IX, eu chamava de tudo.<br>
+        — A."</span>`;
+    }
+  },600);
+};
 
-// ─── TERMINAL ────────────────────────────────────────────────
-function tprint(msg, cls=''){
-  const out = $('tout');
-  const d = document.createElement('div');
-  d.className = 'tl' + (cls?' '+cls:'');
-  d.textContent = msg;
-  out.appendChild(d);
-  out.scrollTop = out.scrollHeight;
-}
+// ─── TERMINAL ──────────────────────────────────
+const DECRYPT_MAP={
+  OCULTO:   'fragmento I — espectrograma · frequência 14.7Hz · o silêncio tinha forma.',
+  APAGADO:  'fragmento II — acrosstico · sete frases, sete letras. a chave era você mesmo.',
+  ONZE:     'fragmento III — a página /11 existia. o jornal nunca a imprimiu oficialmente.',
+  SENTINELA:'fragmento IV — chegou às 23:05. saiu às 23:16. exato. nunca vai voltar.',
+  ESPELHO:  'fragmento V — estava no índice desde o início. 18% de opacidade. você viu?',
+  CIFRADO:  'fragmento VI — 63 69 66 72 61 64 6f. o erro não era um erro.',
+  INTENCAO: 'fragmento VII — o arquivo guarda o que ninguém pediu para guardar.',
+  RASTRO:   'fragmento VIII — robots.txt · base64 · "RASTRO." era o fim da mensagem.',
+  ABISMO:   'fragmento IX — AQIYMR + chave APAGADO = ABISMO. bom trabalho.',
+  SINAL:    'fragmento X — X-Atlas-Sinal: U0lOQUw= · o servidor fala antes de mostrar.',
+  MARCA:    'fragmento XI — 4D 41 52 43 41 · estava no próprio jornal o tempo todo.',
+  ORIGEM:   'fragmento XII — humans.txt · O·R·I·G·E·M · primeiras letras de cada linha.',
+  LACUNA:   'fragmento XIII — /ix · LPCAND · vigenère com APAGADO · a porta era o número.',
+};
 
-const CMDS = {
+const CMDS={
   help(){
-    tprint('comandos disponíveis:','ok');
-    tprint('  ls              — lista arquivos do sistema','dim');
-    tprint('  whoami          — identificação do usuário','dim');
-    tprint('  status          — status da sessão','dim');
-    tprint('  decrypt [word]  — verifica um fragmento','dim');
-    tprint('  cat [arquivo]   — abre um arquivo','dim');
-    tprint('  ping            — testa conexão com o Arquivista','dim');
-    tprint('  clear           — limpa o terminal','dim');
+    return[
+      {t:'comandos disponíveis:',c:'ok'},
+      {t:'  help              → esta mensagem'},
+      {t:'  ls                → listar arquivos'},
+      {t:'  whoami            → identificação'},
+      {t:'  status            → estado do sistema'},
+      {t:'  decrypt [palavra] → decifrar fragmento'},
+      {t:'  cat [arquivo]     → ver conteúdo de arquivo'},
+      {t:'  open [id]         → abrir janela (carta, arquivo, fragmentos...)'},
+      {t:'  clear             → limpar terminal'},
+      {t:'  atlas             → informações sobre o atlas'},
+      {t:'  ix                → sobre o projeto ix'},
+    ];
   },
   ls(){
-    tprint('── /projeto/ix/raiz ──','dim');
-    tprint('  [DOC]  CARTA_ARQUIVISTA.doc','ok');
-    tprint('  [LOG]  PALAVRAS_ENCONTRADAS.log','ok');
-    tprint('  [DOC]  REGISTRO_IX.doc','ok');
-    tprint('  [DOC]  ENTRADA_FINAL.doc','ok');
-    tprint('  [WAV]  SOM_AMBIENTE.wav       [sem permissão]','err');
-    tprint('  [ENC]  ███████████████.bin    [corrompido]','err');
-    if($('fiSecret').classList.contains('show'))
-      tprint('  [DOC]  NOTA_PESSOAL.doc       [novo]','ok');
+    return[
+      {t:'── PASTA ATUAL: /projeto/ix/raiz ──────────',c:'dim'},
+      {t:'📄  CARTA_ARQUIVISTA.doc      2.1 KB'},
+      {t:'📁  ARQUIVO_ATLAS/            dir'},
+      {t:'    ├── REGISTRO_IX.doc       2.4 KB'},
+      {t:'    ├── ENTRADA_FINAL.doc     1.8 KB'},
+      {t:'    ├── RELATORIO_LACUNA.doc  3.1 KB'},
+      {t:'    └── FRAGMENTOS.log        4.0 KB'},
+      {t:'📋  FRAGMENTOS.log            4.0 KB'},
+      {t:'🎮  MINECRAFT_SRV.log         2.7 KB'},
+      {t:'⚠️   ███████.bin               ??? KB   [CORROMPIDO]',c:'err'},
+      {t:'📁  PASTA_RESTRITA/           🔒 restrito',c:'dim'},
+    ];
   },
   whoami(){
-    tprint('visitante_autorizado','ok');
-    tprint('nível de acesso : ix/xiii','dim');
-    tprint('fragmentos      : 13/13','dim');
+    return[
+      {t:'usuario:   visitante_autorizado'},
+      {t:'nivel:     IX / XIII'},
+      {t:'sessao:    ativa'},
+      {t:'origem:    cacapalavras-atlas.vercel.app'},
+    ];
   },
   status(){
-    const docs = ['carta','palavras','registro','entrada'];
-    const n = docs.filter(k=>opened.has(k)).length;
-    tprint(`arquivos abertos   : ${n}/4`,n>=4?'ok':'dim');
-    tprint('sessão             : ativa','ok');
-    if(n>=4) tprint('arquivo secreto    : desbloqueado','ok');
+    const n=MAIN_DOCS.filter(k=>opened.has(k)).length;
+    return[
+      {t:'── STATUS DO SISTEMA ──────────────────────',c:'dim'},
+      {t:'fragmentos verificados:   13 / 13',c:'ok'},
+      {t:`documentos abertos:       ${n} / 4`,c:n>=3?'ok':''},
+      {t:'arquivo corrompido:       1 detectado',c:'err'},
+      {t:'pasta restrita:           '+(restrUnlocked?'desbloqueada':'bloqueada'),c:restrUnlocked?'ok':'err'},
+    ];
+  },
+  atlas(){
+    return[
+      {t:'atlas → comunidade que registra momentos.',c:'ok'},
+      {t:'jornal → publicação periódica do atlas.'},
+      {t:'projeto ix → o espaço entre as edições.'},
+      {t:'cacapalavras-atlas.vercel.app → onde tudo começa.'},
+    ];
+  },
+  ix(){
+    return[
+      {t:'projeto ix → não é uma edição.',c:'ok'},
+      {t:'é o nome do espaço entre o oito e o dez.'},
+      {t:'treze fragmentos. treze caminhos distintos.'},
+      {t:'este sistema é parte do arquivo.'},
+    ];
   },
   ping(){
-    tprint('enviando sinal para o Arquivista...','dim');
-    setTimeout(()=>tprint('nenhuma resposta.','err'),500);
-    setTimeout(()=>tprint('mas o arquivo permanece aberto.','dim'),900);
+    return[{t:'pong.',c:'ok'},{t:'você está conectado ao arquivo do atlas.'}];
   },
-  clear(){ $('tout').innerHTML=''; },
+  clear(){return null;}
 };
 
-const CAT_MAP = {
-  'carta_arquivista.doc':'carta',
-  'carta':'carta',
-  'palavras_encontradas.log':'palavras',
-  'palavras':'palavras',
-  'registro_ix.doc':'registro',
-  'registro':'registro',
-  'entrada_final.doc':'entrada',
-  'entrada':'entrada',
-  'nota_pessoal.doc':'nota',
-  'nota':'nota',
-};
+function tPrint(text,cls){
+  const o=$('termOut');
+  if(!o) return;
+  const d=document.createElement('div');
+  d.className='tl '+(cls||'');
+  // handle multiline
+  text.split('\n').forEach((line,i)=>{
+    if(i>0) o.appendChild(document.createElement('div')).className='tl '+(cls||'');
+    (i===0?d:o.lastChild).textContent=line;
+  });
+  o.appendChild(d);
+  o.scrollTop=o.scrollHeight;
+}
 
-$('cmd').addEventListener('keydown', function(e){
+$('termCmd').addEventListener('keydown',function(e){
   if(e.key!=='Enter') return;
-  const raw = this.value.trim();
+  const raw=this.value.trim();
   if(!raw) return;
-  this.value = '';
-  tprint('$ '+raw,'inp');
-
-  const parts = raw.toLowerCase().split(/\s+/);
-  const cmd = parts[0];
-  const arg = parts.slice(1).join(' ');
-  const argUp = arg.toUpperCase();
-
-  if(cmd==='decrypt'){
-    if(!arg){ tprint('uso: decrypt [palavra]','err'); return; }
-    if(DECRYPT[argUp]){ tprint(DECRYPT[argUp],'ok'); }
-    else { tprint(`"${argUp}" — fragmento não reconhecido.`,'err'); }
-  } else if(cmd==='cat'){
-    const key = CAT_MAP[arg.replace(/\s+/g,'_')];
-    if(key){ openFile(key); tprint(`abrindo ${arg}...`,'dim'); }
-    else { tprint(`"${arg}": arquivo não encontrado.`,'err'); }
-  } else if(CMDS[cmd]){
-    CMDS[cmd]();
-  } else if(cmd==='atlas'){
-    tprint('o atlas foi construído por quem ficou.','ok');
-  } else if(cmd==='ix' || cmd==='projeto'){
-    tprint('você já está dentro dele.','ok');
-  } else {
-    tprint(`"${cmd}": comando não reconhecido. tente: help`,'err');
-  }
+  const inp=document.createElement('div');
+  inp.className='tl inp';
+  inp.textContent='atlas@ix:~$ '+raw;
+  $('termOut').appendChild(inp);
+  this.value='';
+  processCmd(raw);
+  $('termOut').scrollTop=$('termOut').scrollHeight;
 });
+
+function processCmd(raw){
+  const parts=raw.toUpperCase().split(/\s+/);
+  const cmd=parts[0];
+  const arg=parts.slice(1).join(' ');
+
+  if(cmd==='CLEAR'){
+    $('termOut').innerHTML='';
+    return;
+  }
+  if(cmd==='DECRYPT'){
+    if(!arg){ tPrint('uso: decrypt [palavra]','err'); return; }
+    const r=DECRYPT_MAP[arg];
+    if(r){ tPrint(r,'ok'); }
+    else { tPrint(`"${arg}" não reconhecido. são 13 fragmentos no total.`,'err'); }
+    return;
+  }
+  if(cmd==='CAT'){
+    const larg=arg.toLowerCase().replace(/\..*$/,'').replace(/_/g,'');
+    const fileMap={carta:'carta',registro:'registro',fragmentos:'fragmentos',
+      entrada:'entrada',relatorio:'relatorio',minecraft:'minecraft',nota:'nota'};
+    const fk=Object.keys(fileMap).find(k=>larg.includes(k));
+    if(fk){ openWin(fileMap[fk]); tPrint(`abrindo ${arg}...`,'dim'); }
+    else tPrint(`arquivo não encontrado: ${arg}`,'err');
+    return;
+  }
+  if(cmd==='OPEN'){
+    const ids=['carta','arquivo','fragmentos','minecraft','bin','terminal','restrita','nota','registro','entrada','relatorio'];
+    const larg=arg.toLowerCase();
+    const found=ids.find(id=>id.startsWith(larg));
+    if(found){ openWin(found); tPrint(`abrindo ${found}...`,'dim'); }
+    else tPrint(`janela não encontrada: ${arg}`,'err');
+    return;
+  }
+  const fn=CMDS[cmd.toLowerCase()];
+  if(fn){
+    const res=fn();
+    if(res) res.forEach(r=>tPrint(r.t,r.c));
+  } else {
+    tPrint(`comando não reconhecido: ${raw.toLowerCase()}. tente 'help'.`,'err');
+  }
+}
+
+// icon single-click selection
+document.querySelectorAll('.icon').forEach(ic=>{
+  ic.addEventListener('click',()=>{
+    document.querySelectorAll('.icon').forEach(i=>i.classList.remove('selected'));
+    ic.classList.add('selected');
+  });
+});
+
+// ─── CLOCK ─────────────────────────────────────
+function initClock(){
+  function tick(){
+    const d=new Date();
+    $('tbClock').textContent=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  }
+  tick();setInterval(tick,30000);
+}
 
 })();
 </script>
