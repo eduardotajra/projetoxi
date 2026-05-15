@@ -695,8 +695,8 @@ body{animation:flicker 14s ease-in-out infinite;}
         <div><span class="sys">  →  espectrograma · frequência 14.7Hz · arquivo som_ambiente</span></div>
         <div><span class="ts">[2026-05-13 23:11:43]</span>  <span class="key">FRAGMENTO_II</span>   <span class="val">APAGADO</span>     <span class="chk">✓ verificado</span></div>
         <div><span class="sys">  →  acrosstico · nota_geraldo.txt · sete frases, sete letras</span></div>
-        <div><span class="ts">[2026-05-13 23:11:44]</span>  <span class="key">FRAGMENTO_III</span>  <span class="val">ONZE</span>        <span class="chk">✓ verificado</span></div>
-        <div><span class="sys">  →  página /11 · número que o jornal nunca imprimiu</span></div>
+        <div><span class="ts">[2026-05-13 23:11:44]</span>  <span class="key">FRAGMENTO_III</span>  <span class="val">NOVE</span>        <span class="chk">✓ verificado</span></div>
+        <div><span class="sys">  →  página /9 · o número do projeto, em palavras</span></div>
         <div><span class="ts">[2026-05-13 23:11:45]</span>  <span class="key">FRAGMENTO_IV</span>   <span class="val">SENTINELA</span>   <span class="chk">✓ verificado</span></div>
         <div><span class="sys">  →  /vigilia · visível apenas entre 23:05 e 23:16</span></div>
         <div><span class="ts">[2026-05-13 23:11:46]</span>  <span class="key">FRAGMENTO_V</span>    <span class="val">ESPELHO</span>     <span class="chk">✓ verificado</span></div>
@@ -1174,7 +1174,7 @@ function unlockRestrita(){
       <div class="exp-files">
         <div class="exp-file" ondblclick="openResFile('origem')">
           <div class="exp-file-ico">📄</div>
-          <div class="exp-file-name">ORIGEM_DO_ATLAS.txt</div>
+          <div class="exp-file-name">SOBRE_O_PROJETO.txt</div>
           <div class="exp-file-size">0.9 KB</div>
         </div>
         <div class="exp-file" ondblclick="openResFile('mapa')">
@@ -1201,28 +1201,26 @@ function tryRestrita(){
 
 // restrita sub-files (open in terminal output for simplicity)
 const RES_FILES={
-  origem:`ORIGEM_DO_ATLAS.txt
+  origem:`SOBRE_O_PROJETO.txt
 ─────────────────────────────────────────────
-O Atlas começou como uma ideia simples:
-registrar o que as comunidades normalmente deixam passar.
+O Projeto IX não é uma edição do jornal.
 
-O jornal foi o primeiro passo.
-Cada edição documenta um fragmento do que foi vivido.
+É o nome dado ao espaço entre as coisas.
+Entre o que foi publicado e o que ficou guardado.
+Entre o que o Atlas mostra e o que ele carrega.
 
-O Projeto IX foi o segundo passo:
-provar que o arquivo também existe no que não foi publicado.
-Nas lacunas. Nos espaços. No entre.
+Treze fragmentos.
+Treze métodos distintos.
+Treze lugares onde ninguém disse para procurar.
 
-Entre as edições, existe um arquivo paralelo.
-Este sistema operacional é parte dele.
-Esta conversa é parte dele.
+Você encontrou todos.
 ─────────────────────────────────────────────`,
 
   mapa:`MAPA_FRAGMENTOS.txt
 ─────────────────────────────────────────────
 I   OCULTO     → espectrograma de áudio (som_ambiente)
 II  APAGADO    → acrosstico em nota_geraldo.txt
-III ONZE       → página /11 do jornal
+III NOVE       → página /9 · o número em palavras
 IV  SENTINELA  → /vigilia · janela 23:05–23:16
 V   ESPELHO    → índice do jornal · opacidade 18%
 VI  CIFRADO    → /404 · comentário hex
@@ -1300,7 +1298,7 @@ window.triggerGlitch=function(){
 const DECRYPT_MAP={
   OCULTO:   'fragmento I — espectrograma · frequência 14.7Hz · o silêncio tinha forma.',
   APAGADO:  'fragmento II — acrosstico · sete frases, sete letras. a chave era você mesmo.',
-  ONZE:     'fragmento III — a página /11 existia. o jornal nunca a imprimiu oficialmente.',
+  NOVE:     'fragmento III — a página /9 existe. o número do projeto, em palavras.',
   SENTINELA:'fragmento IV — chegou às 23:05. saiu às 23:16. exato. nunca vai voltar.',
   ESPELHO:  'fragmento V — estava no índice desde o início. 18% de opacidade. você viu?',
   CIFRADO:  'fragmento VI — 63 69 66 72 61 64 6f. o erro não era um erro.',
