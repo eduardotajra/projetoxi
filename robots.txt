@@ -1,0 +1,5 @@
+User-agent: *
+Disallow:
+
+# se você achou este projeto e ainda não completou o enigma, ainda há tempo.
+# cacapalavras-atlas.vercel.app

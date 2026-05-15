@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projeto IX — O Arquivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:    #060402;
+    --ink:   #c9b99a;
+    --dim:   #5a4430;
+    --red:   #7e1419;
+    --red-d: #4d0d10;
+    --pale:  #3a2a18;
+    --faint: #150c05;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Crimson Text', Georgia, serif;
+    font-size: 17px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Vinheta */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.82) 100%);
+    z-index: 0;
+  }
+
+  /* Ruído de papel sutil */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    z-index: 0;
+  }
+
+  .page {
+    position: relative;
+    z-index: 1;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 28px 120px;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 80px 0 60px;
+  }
+
+  .stamp-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 64px;
+    opacity: 0;
+    animation: fadeSlide 1s ease 0.2s forwards;
+  }
+  .stamp-row::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--red);
+    opacity: 0.22;
+  }
+  .stamp-tag {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.55em;
+    color: var(--red);
+    text-transform: uppercase;
+    border: 1px solid var(--red);
+    padding: 4px 14px 3px;
+    opacity: 0.55;
+  }
+
+  .hero-label {
+    font-family: 'Special Elite', serif;
+    font-size: 10px;
+    letter-spacing: 0.5em;
+    color: var(--red);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0;
+    animation: fadeSlide 1s ease 0.5s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Special Elite', serif;
+    font-size: clamp(72px, 14vw, 120px);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 0.88;
+    margin-bottom: 24px;
+    opacity: 0;
+    animation: fadeSlide 1.2s ease 0.7s forwards;
+  }
+
+  .hero-title span {
+    display: block;
+    font-size: clamp(24px, 5vw, 42px);
+    letter-spacing: 0.35em;
+    color: var(--red);
+    opacity: 0.7;
+    margin-top: 8px;
+  }
+
+  .hero-sub {
+    font-size: 14px;
+    color: var(--dim);
+    font-style: italic;
+    letter-spacing: 0.04em;
+    max-width: 440px;
+    opacity: 0;
+    animation: fadeSlide 1s ease 1.1s forwards;
+  }
+
+  .hero-scroll {
+    margin-top: 80px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    animation: fadeSlide 1s ease 1.8s forwards;
+  }
+  .hero-scroll span {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.4em;
+    color: var(--pale);
+    text-transform: uppercase;
+  }
+  .hero-scroll::before {
+    content: '';
+    width: 32px;
+    height: 1px;
+    background: var(--pale);
+    opacity: 0.4;
+  }
+
+  /* ─── DIVIDER ─── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 72px 0 52px;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--faint);
+  }
+  .section-divider-mark {
+    font-family: 'Special Elite', serif;
+    font-size: 7px;
+    letter-spacing: 0.5em;
+    color: var(--pale);
+    text-transform: uppercase;
+  }
+
+  /* ─── CARTA ─── */
+  .carta-header {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.45em;
+    color: var(--pale);
+    text-transform: uppercase;
+    margin-bottom: 40px;
+    opacity: 0.7;
+  }
+
+  .carta p {
+    margin-bottom: 28px;
+    color: var(--dim);
+    font-style: italic;
+    line-height: 1.95;
+  }
+
+  .carta p.destaque {
+    color: var(--ink);
+    font-style: normal;
+    font-size: 20px;
+    line-height: 1.75;
+    border-left: 2px solid var(--red);
+    padding-left: 20px;
+    margin-left: -22px;
+    opacity: 0.9;
+  }
+
+  /* ─── TABELA DE PALAVRAS ─── */
+  .words-section {
+    margin: 56px 0;
+  }
+
+  .words-header {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.45em;
+    color: var(--pale);
+    text-transform: uppercase;
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .words-header::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--faint);
+  }
+
+  .word-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 20px;
+    padding: 16px 0;
+    border-bottom: 1px solid #160e05;
+    align-items: baseline;
+  }
+  .word-row:first-of-type { border-top: 1px solid #160e05; }
+
+  .word-num {
+    font-family: 'Special Elite', serif;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: var(--red);
+    opacity: 0.45;
+    margin-bottom: 3px;
+  }
+  .word-key {
+    font-family: 'Special Elite', serif;
+    font-size: 15px;
+    letter-spacing: 0.22em;
+    color: var(--ink);
+  }
+  .word-gloss {
+    font-size: 14px;
+    color: var(--dim);
+    font-style: italic;
+    line-height: 1.55;
+  }
+
+  /* ─── FECHAMENTO ─── */
+  .carta-close {
+    margin-top: 64px;
+    padding-top: 40px;
+    border-top: 1px solid #1a0e06;
+  }
+  .carta-sig {
+    font-family: 'Special Elite', serif;
+    font-size: 13px;
+    letter-spacing: 0.22em;
+    color: var(--ink);
+    text-transform: uppercase;
+    line-height: 2.2;
+    opacity: 0.7;
+  }
+  .carta-date {
+    font-size: 13px;
+    color: var(--pale);
+    font-style: italic;
+    margin-top: 4px;
+    opacity: 0.5;
+  }
+
+  /* ─── RODAPÉ ─── */
+  .page-footer {
+    margin-top: 96px;
+    padding-top: 28px;
+    border-top: 1px solid var(--faint);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .footer-mark {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.38em;
+    color: var(--pale);
+    text-transform: uppercase;
+    opacity: 0.35;
+  }
+  .back-link {
+    font-family: 'Special Elite', serif;
+    font-size: 8px;
+    letter-spacing: 0.28em;
+    color: var(--pale);
+    text-transform: uppercase;
+    text-decoration: none;
+    opacity: 0.32;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+    transition: opacity 0.2s;
+  }
+  .back-link:hover { opacity: 0.65; }
+
+  /* ─── ANIMAÇÕES ─── */
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* ─── NÚMERO GRANDE DECORATIVO ─── */
+  .bg-ix {
+    position: fixed;
+    bottom: -60px;
+    right: -20px;
+    font-family: 'Special Elite', serif;
+    font-size: clamp(220px, 30vw, 380px);
+    letter-spacing: -0.05em;
+    color: var(--red);
+    opacity: 0.03;
+    pointer-events: none;
+    user-select: none;
+    z-index: 0;
+    line-height: 1;
+  }
+
+  @media (max-width: 520px) {
+    .page { padding: 0 20px 80px; }
+    .hero-title { font-size: 64px; }
+    .word-row { grid-template-columns: 1fr; gap: 4px; }
+    .carta p.destaque { margin-left: 0; }
+    .page-footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-ix" aria-hidden="true">IX</div>
+
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="stamp-row">
+      <div class="stamp-tag">Confidencial</div>
+    </div>
+
+    <div class="hero-label">Projeto</div>
+    <div class="hero-title">
+      IX
+      <span>a nona intenção · carta completa</span>
+    </div>
+
+    <div class="hero-sub">
+      O que ficou entre os dias nunca foi perdido.<br>
+      Apenas guardado, à espera de quem procurasse.
+    </div>
+
+    <div class="hero-scroll">
+      <span>continuar lendo</span>
+    </div>
+  </div>
+
+  <!-- CARTA -->
+  <div class="reveal">
+    <div class="section-divider">
+      <span class="section-divider-mark">carta do arquivista · acesso liberado</span>
+    </div>
+
+    <div class="carta">
+      <div class="carta-header">[ documento selado — agora aberto ]</div>
+
+      <p class="destaque">O Arquivista não esperava que você chegasse até aqui.</p>
+
+      <p>Mas você chegou.<br>
+      E isso muda tudo.</p>
+
+      <p>Deixa eu te contar o que o Projeto IX realmente é.</p>
+
+      <p>Não é uma edição do jornal. Nunca foi.<br>
+      É o nome que dei para o espaço entre as coisas.<br>
+      Entre o oito e o dez. Entre o que foi publicado e o que ficou guardado.<br>
+      Entre o que o Atlas mostra, e o que ele carrega em silêncio.</p>
+
+      <p>Você percorreu esse espaço inteiro.</p>
+    </div>
+  </div>
+
+  <!-- PALAVRAS -->
+  <div class="reveal">
+    <div class="words-section">
+      <div class="words-header">palavras encontradas no percurso</div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">I</div>
+          <div class="word-key">OCULTO</div>
+        </div>
+        <div class="word-gloss">a mensagem que se esconde no que parece silêncio</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">II</div>
+          <div class="word-key">APAGADO</div>
+        </div>
+        <div class="word-gloss">a chave que estava escrita nas margens, esperando</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">III</div>
+          <div class="word-key">ONZE</div>
+        </div>
+        <div class="word-gloss">o número que o jornal nunca imprimiu</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">IV</div>
+          <div class="word-key">SENTINELA</div>
+        </div>
+        <div class="word-gloss">quem esperou na hora certa, no lugar certo</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">V</div>
+          <div class="word-key">ESPELHO</div>
+        </div>
+        <div class="word-gloss">o reflexo do projeto em si mesmo</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">VI</div>
+          <div class="word-key">CIFRADO</div>
+        </div>
+        <div class="word-gloss">o que o erro escondia, em hex, na margem</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">VII</div>
+          <div class="word-key">INTENCAO</div>
+        </div>
+        <div class="word-gloss">a nona intenção — o que originou tudo isso</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">VIII</div>
+          <div class="word-key">RASTRO</div>
+        </div>
+        <div class="word-gloss">o que o guardião das portas deixou nas margens</div>
+      </div>
+
+      <div class="word-row">
+        <div>
+          <div class="word-num">IX</div>
+          <div class="word-key">ABISMO</div>
+        </div>
+        <div class="word-gloss">o fundo da armadilha, que só quem olha encontra</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINAL DA CARTA -->
+  <div class="reveal">
+    <div class="carta">
+      <p>Nove palavras. Nove caminhos. Um arquivo.</p>
+
+      <p>O Atlas é uma comunidade.<br>
+      Mas é também um repositório de momentos que a maioria das comunidades deixa passar.<br>
+      As edições do jornal são registros.<br>
+      Os espaços entre elas, o que não foi dito, o que ficou entre os dias,<br>
+      são tão reais quanto qualquer palavra encontrada numa grade.</p>
+
+      <p>Você acabou de catalogar um desses momentos.</p>
+
+      <p class="destaque">O Projeto IX sempre existiu.<br>
+      Você só acabou de encontrá-lo.</p>
+
+      <p>Obrigado por procurar o que estava oculto.<br>
+      Obrigado por ler o que estava entre as linhas.<br>
+      Obrigado por ter chegado a tempo.</p>
+    </div>
+
+    <div class="carta-close">
+      <div class="carta-sig">— O Arquivista</div>
+      <div class="carta-date">[carta selada em 13/05/2026]</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <span class="footer-mark">Projeto IX &nbsp;·&nbsp; Jornal Atlas &nbsp;·&nbsp; 2026</span>
+    <a class="back-link" href="https://cacapalavras-atlas.vercel.app">← voltar ao jornal</a>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  'use strict';
+  const reveals = document.querySelectorAll('.reveal');
+  if (!('IntersectionObserver' in window)) {
+    reveals.forEach(el => el.classList.add('visible'));
+    return;
+  }
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  reveals.forEach(el => obs.observe(el));
+})();
+</script>
+</body>
+</html>
