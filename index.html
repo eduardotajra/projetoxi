@@ -1012,6 +1012,17 @@ const WIN_META={
   nota:      {label:'NOTA_PESSOAL.doc',icon:'📝'},
 };
 
+function clampWin(w){
+  const vw=window.innerWidth, vh=window.innerHeight-40;
+  let ww=parseInt(w.style.width)||500, wh=parseInt(w.style.height)||400;
+  let l=parseInt(w.style.left)||0, t=parseInt(w.style.top)||0;
+  ww=Math.min(ww,vw-16); wh=Math.min(wh,vh-16);
+  l=Math.max(8,Math.min(l,vw-ww-8));
+  t=Math.max(0,Math.min(t,vh-wh-8));
+  w.style.width=ww+'px'; w.style.height=wh+'px';
+  w.style.left=l+'px';   w.style.top=t+'px';
+}
+
 function openWin(id){
   const w=$('win-'+id);
   if(!w) return;
@@ -1019,6 +1030,7 @@ function openWin(id){
   s.open=true;
   s.minimized=false;
   winStates[id]=s;
+  clampWin(w);
   w.classList.remove('closing');
   void w.offsetWidth; // force reflow so transition fires
   w.classList.add('open');
