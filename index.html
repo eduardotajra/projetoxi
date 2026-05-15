@@ -130,7 +130,7 @@ body{animation:flicker 14s ease-in-out infinite;}
 /* ── WINDOWS ──────────────────────────────────── */
 .window{
   position:absolute;
-  display:none;
+  display:flex;
   flex-direction:column;
   border:1px solid var(--br);
   border-radius:8px;
@@ -139,7 +139,22 @@ body{animation:flicker 14s ease-in-out infinite;}
   min-width:300px;min-height:200px;
   resize:both;
   background:var(--wb);
-  animation:fadeIn .18s ease;
+  /* hidden by default — animated via .open */
+  opacity:0;
+  pointer-events:none;
+  transform:scale(0.93) translateY(12px);
+  transition:opacity .2s ease, transform .25s cubic-bezier(.34,1.5,.64,1);
+}
+.window.open{
+  opacity:1;
+  pointer-events:all;
+  transform:none;
+}
+.window.closing{
+  opacity:0!important;
+  transform:scale(0.9) translateY(8px)!important;
+  transition:opacity .13s ease, transform .13s ease!important;
+  pointer-events:none!important;
 }
 .window.active{border-color:#3a5070;box-shadow:0 12px 48px rgba(0,0,0,.75),0 0 0 1px rgba(56,139,253,.2);}
 .window.maximized{
@@ -147,7 +162,6 @@ body{animation:flicker 14s ease-in-out infinite;}
   width:100vw!important;height:calc(100vh - 40px)!important;
   border-radius:0;resize:none;
 }
-.window.minimized{display:none!important;}
 
 /* title bar */
 .win-bar{
@@ -1005,8 +1019,9 @@ function openWin(id){
   s.open=true;
   s.minimized=false;
   winStates[id]=s;
-  w.style.display='flex';
-  w.classList.remove('minimized');
+  w.classList.remove('closing');
+  void w.offsetWidth; // force reflow so transition fires
+  w.classList.add('open');
   focusWin(id);
   trackOpened(id);
   renderTaskbar();
@@ -1015,22 +1030,22 @@ function openWin(id){
 function closeWin(id){
   const w=$('win-'+id);
   if(!w) return;
-  w.style.display='none';
-  w.classList.remove('maximized');
   const s=winStates[id]||{};
   s.open=false;s.minimized=false;s.maximized=false;
   winStates[id]=s;
+  w.classList.add('closing');
+  setTimeout(()=>{ w.classList.remove('open','closing','maximized'); },140);
   renderTaskbar();
 }
 
 function minWin(id){
   const w=$('win-'+id);
   if(!w) return;
-  w.style.display='none';
-  w.classList.add('minimized');
   const s=winStates[id]||{};
   s.minimized=true;
   winStates[id]=s;
+  w.classList.add('closing');
+  setTimeout(()=>{ w.classList.remove('open','closing'); },140);
   renderTaskbar();
 }
 
@@ -1050,6 +1065,13 @@ function toggleMax(id){
   winStates[id]=s;
   focusWin(id);
 }
+
+// Expose all window-control functions to global scope (required for inline onclick)
+window.openWin=openWin;
+window.closeWin=closeWin;
+window.minWin=minWin;
+window.toggleMax=toggleMax;
+window.tryRestrita=tryRestrita;
 
 function focusWin(id){
   document.querySelectorAll('.window').forEach(el=>el.classList.remove('active'));
@@ -1101,6 +1123,7 @@ function renderTaskbar(){
     btn.textContent=m.icon+' '+m.label;
     btn.onclick=()=>{
       if(s.minimized){ openWin(id); }
+      else if(!w.classList.contains('open')){ openWin(id); }
       else { minWin(id); }
     };
     wins.appendChild(btn);
