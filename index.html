@@ -1030,12 +1030,17 @@ function clampWin(w){
 }
 
 function downloadFragmento(){
-  const a=document.createElement('a');
-  a.href='fragmento_final.bat';
-  a.download='fragmento_final.bat';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  fetch('fragmento_final.bat')
+    .then(r=>r.blob())
+    .then(blob=>{
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url; a.download='fragmento_final.bat';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
 }
 
 function openWin(id){
