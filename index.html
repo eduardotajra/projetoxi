@@ -459,9 +459,9 @@ body{animation:flicker 14s ease-in-out infinite;}
       <div class="icon-badge">!</div>
     </div>
 
-    <div class="icon" ondblclick="downloadFragmento()" title="fragmento_final.zip">
-      <div class="icon-img">🗜️</div>
-      <div class="icon-label">fragmento_final.zip</div>
+    <div class="icon" ondblclick="downloadFragmento()" title="fragmento_final.bat">
+      <div class="icon-img">⚙️</div>
+      <div class="icon-label">fragmento_final.bat</div>
     </div>
 
   </div>
@@ -1030,9 +1030,11 @@ function clampWin(w){
 
 function downloadFragmento(){
   const a=document.createElement('a');
-  a.href='fragmento_final.zip';
-  a.download='fragmento_final.zip';
+  a.href='/fragmento_final.bat';
+  a.download='fragmento_final.bat';
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
 }
 
 function openWin(id){
