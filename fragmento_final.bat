@@ -49,9 +49,15 @@ echo.
 timeout /t 1 /nobreak >nul
 
 for /f %%a in ('echo prompt $E^| cmd /q') do set "ESC=%%a"
-set "Gn=!ESC![32m" & set "Rd=!ESC![31m" & set "Yw=!ESC![33m"
-set "Cy=!ESC![36m" & set "Wh=!ESC![97m" & set "Dm=!ESC![90m"
-set "Hi=!ESC![96m" & set "Zz=!ESC![0m"  & set "Bd=!ESC![1m"
+set "Gn=!ESC![32m"
+set "Rd=!ESC![31m"
+set "Yw=!ESC![33m"
+set "Cy=!ESC![36m"
+set "Wh=!ESC![97m"
+set "Dm=!ESC![90m"
+set "Hi=!ESC![96m"
+set "Zz=!ESC![0m"
+set "Bd=!ESC![1m"
 
 set "CWD=raiz"
 set "PESSOAL_UNLOCKED=0"
@@ -69,11 +75,11 @@ timeout /t 1 /nobreak >nul
 echo          !Dm!A T L A S  O S!Zz!
 timeout /t 1 /nobreak >nul
 echo.
-echo          !Cy!!Bd!    I   X  !Zz!
-echo          !Cy!!Bd!   / \ / \ !Zz!
-echo          !Cy!!Bd!  /   X   \!Zz!
-echo          !Cy!!Bd!     / \   !Zz!
-echo          !Cy!!Bd!    /   \  !Zz!
+echo          !Cy!    I   X  !Zz!
+echo          !Cy!   / \ / \ !Zz!
+echo          !Cy!  /   X   \!Zz!
+echo          !Cy!     / \   !Zz!
+echo          !Cy!    /   \  !Zz!
 echo.
 timeout /t 1 /nobreak >nul
 echo          !Dm!P R O J E T O  I X!Zz!
@@ -88,7 +94,7 @@ echo.
 timeout /t 2 /nobreak >nul
 echo  !Dm!  Detectando tentativa de acesso...!Zz!
 timeout /t 2 /nobreak >nul
-echo  !Yw!  [AVISO]!Zz! !Dm!Backdoor ativo no setor IX.!Zz!
+echo  !Yw!  [AVISO] Backdoor ativo no setor IX.!Zz!
 timeout /t 1 /nobreak >nul
 echo  !Dm!  Iniciando bypass automatico...!Zz!
 timeout /t 2 /nobreak >nul
@@ -108,14 +114,14 @@ pause >nul
 :TERMINAL
 cls
 echo.
-echo  !Cy!!Bd!  ATLAS OS . TERMINAL!Zz!
+echo  !Cy!  ATLAS OS . TERMINAL!Zz!
 echo  !Dm!  =========================================================!Zz!
-echo  !Dm!  arquivista@atlas:!Zz!!Wh!/!CWD!!Zz!  !Dm!— digite 'ajuda' para comandos!Zz!
+echo  !Dm!  arquivista@atlas:/!CWD! -- ajuda para ver comandos!Zz!
 echo  !Dm!  =========================================================!Zz!
 echo.
 set "VERB="
 set "ARG1=_"
-set /p "CMD=  !Dm!$!Zz! "
+set /p "CMD=  $ "
 if "!CMD!"=="" goto TERMINAL
 for /f "tokens=1,*" %%a in ("!CMD!") do (
   set "VERB=%%a"
@@ -135,21 +141,21 @@ if /i "!VERB!"=="cls"      goto TERMINAL
 if /i "!VERB!"=="clear"    goto TERMINAL
 if /i "!VERB!"=="sair"     goto FIM_SAIU
 echo.
-echo  !Rd!  '!VERB!': comando nao reconhecido.!Zz! !Dm!Digite 'ajuda'.!Zz!
+echo  !Rd!  '!VERB!': comando nao reconhecido. Digite: ajuda!Zz!
 echo.
 goto TERMINAL
 
 :: ── ajuda ─────────────────────────────────────────────────
 :CMD_AJUDA
 echo.
-echo  !Wh!  Comandos:!Zz!
-echo  !Dm!  ls                !Zz!— listar arquivos do diretorio atual
-echo  !Dm!  cd [dir]          !Zz!— entrar em diretorio
-echo  !Dm!  cd ..             !Zz!— voltar para raiz
-echo  !Dm!  cat [arquivo]     !Zz!— ler arquivo
-echo  !Dm!  abrir [dir]       !Zz!— abrir diretorio bloqueado
-echo  !Dm!  decifrar [arq]    !Zz!— decifrar arquivo cifrado
-echo  !Dm!  sair              !Zz!— encerrar sessao
+echo  !Wh!  Comandos disponiveis:!Zz!
+echo  !Dm!  ls                  listar arquivos!Zz!
+echo  !Dm!  cd [dir]            entrar em diretorio!Zz!
+echo  !Dm!  cd ..               voltar para raiz!Zz!
+echo  !Dm!  cat [arquivo]       ler arquivo!Zz!
+echo  !Dm!  abrir [dir]         abrir diretorio bloqueado!Zz!
+echo  !Dm!  decifrar [arq]      decifrar arquivo cifrado!Zz!
+echo  !Dm!  sair                encerrar sessao!Zz!
 echo.
 goto TERMINAL
 
@@ -157,13 +163,13 @@ goto TERMINAL
 :CMD_LS
 echo.
 if "!CWD!"=="raiz" (
-  echo  !Cy!  fragmentos!Zz!     !Dm![diretorio]!Zz!
+  echo  !Cy!  fragmentos/   [diretorio]!Zz!
   if !PESSOAL_UNLOCKED!==0 (
-    echo  !Rd!  pessoal!Zz!        !Dm![BLOQUEADO]!Zz!
+    echo  !Rd!  pessoal/      [BLOQUEADO]!Zz!
   ) else (
-    echo  !Cy!  pessoal!Zz!        !Dm![diretorio]!Zz!
+    echo  !Cy!  pessoal/      [diretorio]!Zz!
   )
-  echo  !Cy!  sistema!Zz!        !Dm![diretorio]!Zz!
+  echo  !Cy!  sistema/      [diretorio]!Zz!
 )
 if "!CWD!"=="fragmentos" (
   echo  !Wh!  manifesto.txt!Zz!
@@ -179,9 +185,9 @@ if "!CWD!"=="pessoal" (
 if "!CWD!"=="sistema" (
   echo  !Wh!  log_selamento.txt!Zz!
   if !RASTRO_DECRYPTED!==0 (
-    echo  !Yw!  rastro.enc!Zz!         !Dm![CIFRADO]!Zz!
+    echo  !Yw!  rastro.enc    [CIFRADO]!Zz!
   ) else (
-    echo  !Wh!  rastro.enc!Zz!         !Dm![decifrado]!Zz!
+    echo  !Wh!  rastro.enc    [decifrado]!Zz!
   )
 )
 echo.
@@ -197,7 +203,7 @@ if /i "!ARG1!"=="pessoal" (
   if !PESSOAL_UNLOCKED!==1 ( set "CWD=pessoal" & goto TERMINAL )
   echo.
   echo  !Rd!  ACESSO NEGADO.!Zz!
-  echo  !Dm!  Use 'abrir pessoal' para tentar acesso.!Zz!
+  echo  !Dm!  Use: abrir pessoal!Zz!
   echo.
   goto TERMINAL
 )
@@ -223,7 +229,7 @@ if /i "!ARG1!"=="log_selamento.txt" (
 if /i "!ARG1!"=="rastro.enc" (
   if not "!CWD!"=="sistema" ( echo. & echo  !Rd!  arquivo nao encontrado aqui.!Zz! & echo. & goto TERMINAL )
   if !RASTRO_DECRYPTED!==0 (
-    echo. & echo  !Yw!  [CIFRADO]!Zz! !Dm!Use 'decifrar rastro.enc' primeiro.!Zz! & echo. & goto TERMINAL
+    echo. & echo  !Yw!  [CIFRADO] Use: decifrar rastro.enc!Zz! & echo. & goto TERMINAL
   )
   goto LER_RASTRO
 )
@@ -269,16 +275,16 @@ if not "!CWD!"=="sistema" (
   echo. & echo  !Rd!  arquivo nao encontrado aqui.!Zz! & echo. & goto TERMINAL
 )
 if !RASTRO_DECRYPTED!==1 (
-  echo. & echo  !Dm!  Ja decifrado. Use 'cat rastro.enc'.!Zz! & echo. & goto TERMINAL
+  echo. & echo  !Dm!  Ja decifrado. Use: cat rastro.enc!Zz! & echo. & goto TERMINAL
 )
 cls
 echo.
-echo  !Hi!!Bd!  DECIFRAR . rastro.enc!Zz!
+echo  !Hi!  DECIFRAR . rastro.enc!Zz!
 echo  !Dm!  =================================================!Zz!
 echo.
 echo  !Dm!  Conteudo em hex ASCII:!Zz!
 echo.
-echo  !Yw!!Bd!        41  54  4C  41  53!Zz!
+echo  !Yw!        41  54  4C  41  53!Zz!
 echo.
 echo  !Dm!  Converta para texto.!Zz!
 echo  !Dm!  "o nome que nos une."!Zz!
@@ -286,10 +292,9 @@ echo.
 set /p "DANS=  resposta: "
 if /i "!DANS!"=="ATLAS" (
   echo.
-  echo  !Gn!  Decifrado.!Zz!
+  echo  !Gn!  Decifrado. Use: cat rastro.enc!Zz!
   set "RASTRO_DECRYPTED=1"
   timeout /t 1 /nobreak >nul
-  echo  !Dm!  Use 'cat rastro.enc' para ler.!Zz!
 ) else (
   echo.
   echo  !Rd!  Resposta incorreta.!Zz!
@@ -306,7 +311,7 @@ goto TERMINAL
 cls
 echo.
 echo  !Dm!  =================================================!Zz!
-echo  !Wh!!Bd!  fragmentos / manifesto.txt!Zz!
+echo  !Wh!  fragmentos / manifesto.txt!Zz!
 echo  !Dm!  =================================================!Zz!
 echo.
 timeout /t 1 /nobreak >nul
@@ -350,7 +355,7 @@ goto TERMINAL
 cls
 echo.
 echo  !Dm!  =================================================!Zz!
-echo  !Wh!!Bd!  fragmentos / entrada_final.txt!Zz!
+echo  !Wh!  fragmentos / entrada_final.txt!Zz!
 echo  !Dm!  13/05/2026 . 23:11!Zz!
 echo  !Dm!  =================================================!Zz!
 echo.
@@ -389,22 +394,22 @@ goto TERMINAL
 cls
 echo.
 echo  !Dm!  =================================================!Zz!
-echo  !Hi!!Bd!  sistema / log_selamento.txt!Zz!
+echo  !Hi!  sistema / log_selamento.txt!Zz!
 echo  !Dm!  =================================================!Zz!
 echo.
 echo  !Dm!  [2026-05-13 23:11:42] Iniciando selamento...!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Gn!  [OK]!Zz!    !Dm!fragmentos verificados: 13/13!Zz!
+echo  !Gn!  [OK]    fragmentos verificados: 13/13!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Gn!  [OK]!Zz!    !Dm!arquivos indexados!Zz!
+echo  !Gn!  [OK]    arquivos indexados!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Yw!  [INFO]!Zz!  !Dm!rastro.enc: cifrado em hex ASCII!Zz!
+echo  !Yw!  [INFO]  rastro.enc: cifrado em hex ASCII!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Yw!  [INFO]!Zz!  !Dm!chave de decifragem: o nome que nos une!Zz!
+echo  !Yw!  [INFO]  chave: o nome que nos une!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Yw!  [INFO]!Zz!  !Dm!/pessoal: selado com a lacuna!Zz!
+echo  !Yw!  [INFO]  /pessoal: selado com a lacuna!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Gn!  [OK]!Zz!    !Dm!selamento concluido!Zz!
+echo  !Gn!  [OK]    selamento concluido!Zz!
 echo.
 echo  !Dm!  [2026-05-13 23:11:58] Sistema offline.!Zz!
 echo.
@@ -417,7 +422,7 @@ goto TERMINAL
 cls
 echo.
 echo  !Dm!  =================================================!Zz!
-echo  !Hi!!Bd!  sistema / rastro.enc . [decifrado]!Zz!
+echo  !Hi!  sistema / rastro.enc [decifrado]!Zz!
 echo  !Dm!  =================================================!Zz!
 echo.
 echo  !Dm!  hex original:!Zz!
@@ -436,7 +441,7 @@ pause >nul
 goto TERMINAL
 
 :: ============================================================
-::  CARTA ATLAS — TELA FINAL
+::  CARTA ATLAS - TELA FINAL
 :: ============================================================
 :CARTA_ATLAS
 cls
@@ -445,7 +450,7 @@ echo.
 timeout /t 2 /nobreak >nul
 echo  !Dm!  =================================================!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Wh!!Bd!  pessoal / carta_atlas.txt!Zz!
+echo  !Wh!  pessoal / carta_atlas.txt!Zz!
 timeout /t 1 /nobreak >nul
 echo  !Dm!  =================================================!Zz!
 echo.
@@ -459,7 +464,7 @@ echo  !Dm!  Construi o Projeto IX como um espelho.!Zz!
 timeout /t 1 /nobreak >nul
 echo  !Dm!  Nao do que o Atlas e.!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Dm!  Mas do que ele sempre foi —!Zz!
+echo  !Dm!  Mas do que ele sempre foi,!Zz!
 timeout /t 1 /nobreak >nul
 echo  !Dm!  mesmo antes de existir.!Zz!
 echo.
@@ -473,7 +478,7 @@ timeout /t 1 /nobreak >nul
 echo  !Wh!  uma forma de dizer:!Zz!
 echo.
 timeout /t 1 /nobreak >nul
-echo  !Hi!!Bd!  voce importa. voce pertence.!Zz!
+echo  !Hi!  voce importa. voce pertence.!Zz!
 echo.
 timeout /t 3 /nobreak >nul
 echo  !Dm!  O Atlas foi construido por quem ficou.!Zz!
@@ -481,7 +486,7 @@ timeout /t 1 /nobreak >nul
 echo  !Dm!  Nao por quem passou.!Zz!
 echo.
 timeout /t 2 /nobreak >nul
-echo  !Wh!!Bd!  Voce ficou.!Zz!
+echo  !Wh!  Voce ficou.!Zz!
 echo.
 timeout /t 2 /nobreak >nul
 echo  !Dm!  -- O Arquivista!Zz!
@@ -514,7 +519,7 @@ echo.
 timeout /t 1 /nobreak >nul
 echo  !Dm!  Selando arquivo...!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Gn!  [OK]!Zz! !Dm!arquivo selado.!Zz!
+echo  !Gn!  [OK] arquivo selado.!Zz!
 echo.
 timeout /t 2 /nobreak >nul
 echo  !Wh!  "Algumas coisas precisam esperar!Zz!
@@ -535,7 +540,7 @@ echo.
 timeout /t 1 /nobreak >nul
 echo  !Dm!  Liberando arquivo...!Zz!
 timeout /t 1 /nobreak >nul
-echo  !Gn!  [OK]!Zz! !Dm!arquivo liberado.!Zz!
+echo  !Gn!  [OK] arquivo liberado.!Zz!
 echo.
 timeout /t 2 /nobreak >nul
 echo  !Wh!  "Isso e o Atlas:!Zz!
@@ -547,7 +552,7 @@ timeout /t 1 /nobreak >nul
 echo  !Wh!   em vez de guardar."!Zz!
 echo.
 timeout /t 2 /nobreak >nul
-echo  !Hi!!Bd!  O Arquivista aprovaria.!Zz!
+echo  !Hi!  O Arquivista aprovaria.!Zz!
 echo.
 timeout /t 2 /nobreak >nul
 goto FIM_END
