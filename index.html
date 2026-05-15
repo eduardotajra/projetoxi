@@ -3,578 +3,878 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Projeto IX — O Arquivo</title>
+<title>ATLAS · ARQUIVO · IX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg:    #060402;
-    --ink:   #c9b99a;
-    --dim:   #5a4430;
-    --red:   #7e1419;
-    --red-d: #4d0d10;
-    --pale:  #3a2a18;
-    --faint: #150c05;
-  }
+:root {
+  --bg:   #040302;
+  --g0:   #0a1408;
+  --g1:   #1c3a12;
+  --g2:   #3a7228;
+  --g3:   #56a03c;
+  --g4:   #7acc58;
+  --red:  #7e1419;
+  --redb: #c0202a;
+  --amb:  #b06820;
+  --pap:  #ede0c4;
+  --papd: #1a0e06;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--g3);
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── SCANLINES ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 90;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 2px,
+    rgba(0,0,0,0.09) 2px, rgba(0,0,0,0.09) 4px
+  );
+}
 
-  html, body {
-    min-height: 100%;
-    background: var(--bg);
-    color: var(--ink);
-    font-family: 'Crimson Text', Georgia, serif;
-    font-size: 17px;
-    line-height: 1.85;
-    -webkit-font-smoothing: antialiased;
-  }
+/* ── FLICKER ── */
+@keyframes flicker {
+  0%,96%,100%{opacity:1}97%{opacity:.93}98%{opacity:.97}99%{opacity:.91}
+}
+body { animation: flicker 12s ease-in-out infinite; }
 
-  /* Vinheta */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    background: radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,0.82) 100%);
-    z-index: 0;
-  }
+/* ── GLITCH OVERLAY ── */
+#glitchOverlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: var(--red);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none;
+  font-family: 'Special Elite', serif;
+  font-size: clamp(22px, 5vw, 42px);
+  letter-spacing: 0.25em;
+  color: #fff;
+  text-shadow: 0 0 30px #fff, 0 0 60px rgba(255,255,255,0.5);
+  text-align: center;
+  padding: 20px;
+  transition: opacity 0.05s;
+}
 
-  /* Ruído de papel sutil */
-  body::after {
-    content: '';
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-    opacity: 0.025;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-    z-index: 0;
-  }
+/* ── BOOT ── */
+#boot {
+  position: fixed; inset: 0; z-index: 100;
+  background: var(--bg);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 32px 24px;
+}
+#bootPre {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--g3);
+  line-height: 1.65;
+  white-space: pre;
+  max-width: 580px;
+  width: 100%;
+  text-shadow: 0 0 10px var(--g1);
+  overflow: hidden;
+}
+#bootPre .hi { color: var(--g4); text-shadow: 0 0 12px var(--g3); }
+#bootPre .dim { color: var(--g1); }
+#bootPre .ok  { color: var(--g4); }
+#bootPre .err { color: var(--red); }
+#bootCursor {
+  display: inline-block;
+  width: 8px; height: 14px;
+  background: var(--g3);
+  vertical-align: middle;
+  animation: blink .7s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+#bootSkip {
+  position: absolute; bottom: 20px; right: 24px;
+  font-size: 10px; letter-spacing: 0.22em;
+  color: var(--g1); cursor: pointer; text-transform: uppercase;
+  transition: color .2s;
+}
+#bootSkip:hover { color: var(--g2); }
 
-  .page {
-    position: relative;
-    z-index: 1;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 0 28px 120px;
-  }
+/* ── APP LAYOUT ── */
+#app {
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+#app.off { display: none; }
 
-  /* ─── HERO ─── */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 80px 0 60px;
-  }
+/* ── HEADER ── */
+.t-head {
+  border-bottom: 1px solid var(--g1);
+  padding: 9px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  background: rgba(0,8,0,.55);
+  flex-shrink: 0;
+}
+.t-head-l { display: flex; align-items: center; gap: 18px; }
+.t-logo {
+  font-family: 'Special Elite', serif;
+  font-size: 11px; letter-spacing: .45em;
+  color: var(--g4); text-shadow: 0 0 12px var(--g3);
+  text-transform: uppercase;
+}
+.t-path { font-size: 10px; color: var(--g1); letter-spacing: .08em; }
+.t-meta { font-size: 10px; color: var(--g2); letter-spacing: .18em; display: flex; gap: 16px; }
+.t-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--g3); display: inline-block; margin-right: 4px;
+  box-shadow: 0 0 7px var(--g3);
+  animation: pulse 2.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
 
-  .stamp-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 64px;
-    opacity: 0;
-    animation: fadeSlide 1s ease 0.2s forwards;
-  }
-  .stamp-row::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--red);
-    opacity: 0.22;
-  }
-  .stamp-tag {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.55em;
-    color: var(--red);
-    text-transform: uppercase;
-    border: 1px solid var(--red);
-    padding: 4px 14px 3px;
-    opacity: 0.55;
-  }
+/* ── BODY ── */
+.t-body {
+  display: flex; overflow: hidden;
+  min-height: 0;
+}
 
-  .hero-label {
-    font-family: 'Special Elite', serif;
-    font-size: 10px;
-    letter-spacing: 0.5em;
-    color: var(--red);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    opacity: 0;
-    animation: fadeSlide 1s ease 0.5s forwards;
-  }
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 252px; flex-shrink: 0;
+  border-right: 1px solid var(--g1);
+  display: flex; flex-direction: column;
+  background: rgba(0,6,0,.4);
+  overflow: hidden;
+}
+.sb-head {
+  padding: 12px 16px 8px;
+  font-size: 9px; letter-spacing: .35em; color: var(--g1);
+  text-transform: uppercase;
+  border-bottom: 1px solid #0c1509;
+  flex-shrink: 0;
+}
+.sb-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.sb-list::-webkit-scrollbar { width: 2px; }
+.sb-list::-webkit-scrollbar-thumb { background: var(--g1); }
 
-  .hero-title {
-    font-family: 'Special Elite', serif;
-    font-size: clamp(72px, 14vw, 120px);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ink);
-    line-height: 0.88;
-    margin-bottom: 24px;
-    opacity: 0;
-    animation: fadeSlide 1.2s ease 0.7s forwards;
-  }
+.fi {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 14px; cursor: pointer;
+  transition: background .15s; position: relative;
+  user-select: none;
+}
+.fi:hover   { background: rgba(60,114,40,.09); }
+.fi.active  { background: rgba(60,114,40,.17); }
+.fi.locked  { opacity: .35; cursor: default; }
+.fi.locked:hover { background: none; }
+.fi.corrupt { cursor: pointer; }
+.fi.secret  { display: none; }
+.fi.secret.show { display: flex; }
 
-  .hero-title span {
-    display: block;
-    font-size: clamp(24px, 5vw, 42px);
-    letter-spacing: 0.35em;
-    color: var(--red);
-    opacity: 0.7;
-    margin-top: 8px;
-  }
+.fi-type { font-size: 9px; color: var(--g1); width: 34px; flex-shrink: 0; letter-spacing: .05em; }
+.fi-type.d { color: var(--g2); }
+.fi-type.l { color: var(--amb); }
+.fi-type.e { color: var(--red); }
+.fi-name { font-size: 11px; color: var(--g3); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi.corrupt .fi-name { color: var(--red); text-decoration: line-through; letter-spacing: .06em; }
 
-  .hero-sub {
-    font-size: 14px;
-    color: var(--dim);
-    font-style: italic;
-    letter-spacing: 0.04em;
-    max-width: 440px;
-    opacity: 0;
-    animation: fadeSlide 1s ease 1.1s forwards;
-  }
+.fi-badge {
+  font-size: 8px; letter-spacing: .12em; padding: 1px 5px;
+  border: 1px solid var(--g4); color: var(--g4);
+  text-transform: uppercase;
+  animation: badgeFade 1.1s ease-in-out infinite;
+}
+@keyframes badgeFade { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-  .hero-scroll {
-    margin-top: 80px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    opacity: 0;
-    animation: fadeSlide 1s ease 1.8s forwards;
-  }
-  .hero-scroll span {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.4em;
-    color: var(--pale);
-    text-transform: uppercase;
-  }
-  .hero-scroll::before {
-    content: '';
-    width: 32px;
-    height: 1px;
-    background: var(--pale);
-    opacity: 0.4;
-  }
+/* ── VIEWER ── */
+.viewer {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  position: relative;
+}
+.viewer::-webkit-scrollbar { width: 4px; }
+.viewer::-webkit-scrollbar-thumb { background: var(--g1); }
 
-  /* ─── DIVIDER ─── */
-  .section-divider {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin: 72px 0 52px;
-  }
-  .section-divider::before,
-  .section-divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--faint);
-  }
-  .section-divider-mark {
-    font-family: 'Special Elite', serif;
-    font-size: 7px;
-    letter-spacing: 0.5em;
-    color: var(--pale);
-    text-transform: uppercase;
-  }
+.welcome {
+  height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 40px; gap: 0;
+}
+.welcome-ix {
+  font-family: 'Special Elite', serif;
+  font-size: clamp(100px,18vw,180px);
+  letter-spacing: .04em; line-height: 1;
+  color: var(--g1); opacity: .15;
+  text-shadow: 0 0 60px var(--g1);
+  user-select: none; margin-bottom: 28px;
+}
+.welcome p { font-size: 11px; letter-spacing: .25em; color: var(--g1); line-height: 2.2; }
+.welcome p.hi { color: var(--g2); }
 
-  /* ─── CARTA ─── */
-  .carta-header {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.45em;
-    color: var(--pale);
-    text-transform: uppercase;
-    margin-bottom: 40px;
-    opacity: 0.7;
-  }
+/* ── DOC VIEW ── */
+.dv { padding: 24px 28px 48px; animation: dvIn .25s ease; }
+@keyframes dvIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
 
-  .carta p {
-    margin-bottom: 28px;
-    color: var(--dim);
-    font-style: italic;
-    line-height: 1.95;
-  }
+.dv-head {
+  border-bottom: 1px solid var(--g1);
+  padding-bottom: 12px; margin-bottom: 22px;
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 12px; flex-wrap: wrap;
+}
+.dv-title { font-size: 11px; letter-spacing: .3em; color: var(--g4); text-transform: uppercase; }
+.dv-meta  { font-size: 10px; color: var(--g1); letter-spacing: .08em; line-height: 1.9; text-align: right; }
 
-  .carta p.destaque {
-    color: var(--ink);
-    font-style: normal;
-    font-size: 20px;
-    line-height: 1.75;
-    border-left: 2px solid var(--red);
-    padding-left: 20px;
-    margin-left: -22px;
-    opacity: 0.9;
-  }
+/* LOG style */
+.lc { line-height: 2; }
+.lc .ts  { color: var(--g1); }
+.lc .key { color: var(--g4); letter-spacing: .12em; display: inline-block; min-width: 128px; }
+.lc .val { color: var(--amb); letter-spacing: .1em; }
+.lc .chk { color: var(--g3); }
+.lc .sep { color: var(--g1); padding: 6px 0; display: block; }
+.lc .fin { color: var(--g4); font-size: 12px; }
 
-  /* ─── TABELA DE PALAVRAS ─── */
-  .words-section {
-    margin: 56px 0;
-  }
+/* PAPER style */
+.pw { padding: 6px 12px 32px; }
+.paper {
+  background: var(--pap);
+  color: var(--papd);
+  font-family: 'Crimson Text', Georgia, serif;
+  font-size: 16px; line-height: 1.92;
+  padding: 52px 56px 60px;
+  max-width: 620px; margin: 0 auto;
+  position: relative;
+  box-shadow: 0 8px 60px rgba(0,0,0,.75), 0 0 0 1px rgba(0,0,0,.3);
+}
+.paper::before {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg, transparent, transparent 30px,
+    rgba(74,37,8,.055) 30px, rgba(74,37,8,.055) 31px
+  );
+}
+.paper::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,.06) 0%, transparent 50%, rgba(0,0,0,.06) 100%);
+}
+.stamp {
+  position: absolute; top: 32px; right: 36px;
+  font-family: 'Special Elite', serif;
+  font-size: 13px; letter-spacing: .22em;
+  color: rgba(126,20,25,.72);
+  border: 2px solid rgba(126,20,25,.55);
+  padding: 5px 12px 4px;
+  text-transform: uppercase;
+  transform: rotate(3.5deg);
+  user-select: none; z-index: 1;
+}
+.paper-lbl {
+  font-family: 'Special Elite', serif;
+  font-size: 8px; letter-spacing: .45em;
+  color: #7a5030; text-transform: uppercase;
+  margin-bottom: 28px; opacity: .7;
+}
+.paper-ttl {
+  font-family: 'Special Elite', serif;
+  font-size: 18px; letter-spacing: .1em;
+  color: #1a0e06; text-transform: uppercase;
+  border-bottom: 1px solid rgba(74,37,8,.18);
+  padding-bottom: 14px; margin-bottom: 24px;
+}
+.paper p { margin-bottom: 20px; color: #2c1a0c; }
+.paper p.lead { font-size: 18px; font-weight: 600; color: #1a0e06; }
+.paper p em { font-style: italic; }
+.paper-sig {
+  font-family: 'Special Elite', serif;
+  font-size: 13px; letter-spacing: .2em;
+  color: #4a2810; text-transform: uppercase;
+  margin-top: 28px; line-height: 2;
+}
+.paper-date { font-size: 12px; color: #7a5030; font-style: italic; margin-top: 2px; }
 
-  .words-header {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.45em;
-    color: var(--pale);
-    text-transform: uppercase;
-    margin-bottom: 28px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-  .words-header::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--faint);
-  }
+/* Redacted */
+.rx {
+  background: #1a0e06; color: transparent;
+  cursor: pointer; padding: 0 3px; border-radius: 1px;
+  transition: background .25s, color .25s;
+  position: relative;
+}
+.rx:hover { background: #2e1a0e; }
+.rx:hover::after {
+  content: ' ▶ revelar';
+  position: absolute; right: 0; top: -20px;
+  font-size: 9px; color: rgba(126,20,25,.8);
+  letter-spacing: .1em; white-space: nowrap;
+  background: var(--pap); padding: 2px 5px;
+  border: 1px solid rgba(126,20,25,.3); pointer-events: none;
+}
+.rx.open { background: rgba(126,20,25,.12); color: #7e1419; cursor: default; }
 
-  .word-row {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    gap: 20px;
-    padding: 16px 0;
-    border-bottom: 1px solid #160e05;
-    align-items: baseline;
-  }
-  .word-row:first-of-type { border-top: 1px solid #160e05; }
+/* ── FOOTER (TERMINAL) ── */
+.t-foot {
+  border-top: 1px solid var(--g1);
+  background: rgba(0,6,0,.5);
+  flex-shrink: 0;
+}
+.t-out {
+  max-height: 110px; overflow-y: auto;
+  padding: 8px 20px 4px;
+  font-size: 11px; line-height: 1.75;
+}
+.t-out:empty { display: none; }
+.t-out::-webkit-scrollbar { width: 2px; }
+.t-out::-webkit-scrollbar-thumb { background: var(--g1); }
+.tl { color: var(--g2); }
+.tl.ok  { color: var(--g4); }
+.tl.err { color: var(--red); }
+.tl.dim { color: var(--g1); }
+.tl.inp { color: var(--g3); opacity: .6; }
+.t-cmd {
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px 20px 10px;
+}
+.t-prompt { color: var(--g4); font-size: 12px; white-space: nowrap; text-shadow: 0 0 10px var(--g3); }
+#cmd {
+  flex: 1; background: transparent; border: none;
+  color: var(--g3); font-family: 'Courier New', monospace;
+  font-size: 12px; outline: none;
+  caret-color: var(--g4);
+}
 
-  .word-num {
-    font-family: 'Special Elite', serif;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    color: var(--red);
-    opacity: 0.45;
-    margin-bottom: 3px;
-  }
-  .word-key {
-    font-family: 'Special Elite', serif;
-    font-size: 15px;
-    letter-spacing: 0.22em;
-    color: var(--ink);
-  }
-  .word-gloss {
-    font-size: 14px;
-    color: var(--dim);
-    font-style: italic;
-    line-height: 1.55;
-  }
+/* ── GLITCH ANIM ── */
+@keyframes gShake {
+  0%,100%{transform:none;filter:none}
+  10%{transform:translate(-5px,2px) skewX(-2deg);filter:hue-rotate(90deg) brightness(1.6)}
+  20%{transform:translate(5px,-3px);filter:invert(.15)}
+  30%{transform:translate(-3px,5px) skewX(1deg);filter:hue-rotate(-90deg) saturate(2)}
+  40%{transform:translate(4px,-2px);filter:brightness(2.2) saturate(0)}
+  50%{transform:translate(-4px,3px) skewX(-1deg);filter:hue-rotate(180deg)}
+  60%{transform:translate(3px,1px);filter:invert(.2) brightness(1.4)}
+  70%{transform:translate(-2px,-3px);filter:none}
+  80%{transform:translate(4px,2px);filter:hue-rotate(45deg) brightness(1.3)}
+  90%{transform:translate(-1px,3px) skewX(.5deg);filter:brightness(.6)}
+}
+.glitching { animation: gShake .55s ease forwards !important; }
 
-  /* ─── FECHAMENTO ─── */
-  .carta-close {
-    margin-top: 64px;
-    padding-top: 40px;
-    border-top: 1px solid #1a0e06;
-  }
-  .carta-sig {
-    font-family: 'Special Elite', serif;
-    font-size: 13px;
-    letter-spacing: 0.22em;
-    color: var(--ink);
-    text-transform: uppercase;
-    line-height: 2.2;
-    opacity: 0.7;
-  }
-  .carta-date {
-    font-size: 13px;
-    color: var(--pale);
-    font-style: italic;
-    margin-top: 4px;
-    opacity: 0.5;
-  }
-
-  /* ─── RODAPÉ ─── */
-  .page-footer {
-    margin-top: 96px;
-    padding-top: 28px;
-    border-top: 1px solid var(--faint);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-  .footer-mark {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.38em;
-    color: var(--pale);
-    text-transform: uppercase;
-    opacity: 0.35;
-  }
-  .back-link {
-    font-family: 'Special Elite', serif;
-    font-size: 8px;
-    letter-spacing: 0.28em;
-    color: var(--pale);
-    text-transform: uppercase;
-    text-decoration: none;
-    opacity: 0.32;
-    border-bottom: 1px solid currentColor;
-    padding-bottom: 1px;
-    transition: opacity 0.2s;
-  }
-  .back-link:hover { opacity: 0.65; }
-
-  /* ─── ANIMAÇÕES ─── */
-  @keyframes fadeSlide {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-  }
-  .reveal.visible {
-    opacity: 1;
-    transform: none;
-  }
-
-  /* ─── NÚMERO GRANDE DECORATIVO ─── */
-  .bg-ix {
-    position: fixed;
-    bottom: -60px;
-    right: -20px;
-    font-family: 'Special Elite', serif;
-    font-size: clamp(220px, 30vw, 380px);
-    letter-spacing: -0.05em;
-    color: var(--red);
-    opacity: 0.03;
-    pointer-events: none;
-    user-select: none;
-    z-index: 0;
-    line-height: 1;
-  }
-
-  @media (max-width: 520px) {
-    .page { padding: 0 20px 80px; }
-    .hero-title { font-size: 64px; }
-    .word-row { grid-template-columns: 1fr; gap: 4px; }
-    .carta p.destaque { margin-left: 0; }
-    .page-footer { flex-direction: column; align-items: flex-start; }
-  }
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .sidebar { width: 200px; }
+  .paper { padding: 32px 22px 48px; }
+  .stamp { font-size: 11px; top: 18px; right: 18px; }
+}
+@media(max-width:440px){
+  .t-body { flex-direction: column; }
+  .sidebar { width: 100%; height: 148px; border-right: none; border-bottom: 1px solid var(--g1); }
+  .sb-list { overflow-y: hidden; overflow-x: auto; display: flex; }
+  .fi { flex-direction: column; align-items: flex-start; min-width: 150px; padding: 8px 12px; }
+}
 </style>
 </head>
 <body>
 
-<div class="bg-ix" aria-hidden="true">IX</div>
+<div id="glitchOverlay"></div>
 
-<div class="page">
+<!-- ═══ BOOT ═══ -->
+<div id="boot">
+  <div id="bootPre"></div><span id="bootCursor"></span>
+  <div id="bootSkip">[ clique para pular ]</div>
+</div>
 
-  <!-- HERO -->
-  <div class="hero">
-    <div class="stamp-row">
-      <div class="stamp-tag">Confidencial</div>
+<!-- ═══ APP ═══ -->
+<div id="app" class="off">
+
+  <header class="t-head">
+    <div class="t-head-l">
+      <span class="t-logo">Atlas · Arquivo</span>
+      <span class="t-path">/projeto/ix/raiz</span>
     </div>
-
-    <div class="hero-label">Projeto</div>
-    <div class="hero-title">
-      IX
-      <span>a nona intenção · carta completa</span>
+    <div class="t-meta">
+      <span><span class="t-dot"></span>conectado</span>
+      <span id="fc">0 / 4 abertos</span>
     </div>
+  </header>
 
-    <div class="hero-sub">
-      O que ficou entre os dias nunca foi perdido.<br>
-      Apenas guardado, à espera de quem procurasse.
-    </div>
+  <div class="t-body">
 
-    <div class="hero-scroll">
-      <span>continuar lendo</span>
-    </div>
+    <!-- sidebar -->
+    <aside class="sidebar">
+      <div class="sb-head">── arquivos do sistema ──</div>
+      <nav class="sb-list" id="sbList">
+
+        <div class="fi" data-f="carta" onclick="openFile('carta')">
+          <span class="fi-type d">[DOC]</span>
+          <span class="fi-name">CARTA_ARQUIVISTA.doc</span>
+        </div>
+
+        <div class="fi" data-f="palavras" onclick="openFile('palavras')">
+          <span class="fi-type l">[LOG]</span>
+          <span class="fi-name">PALAVRAS_ENCONTRADAS.log</span>
+        </div>
+
+        <div class="fi" data-f="registro" onclick="openFile('registro')">
+          <span class="fi-type d">[DOC]</span>
+          <span class="fi-name">REGISTRO_IX.doc</span>
+        </div>
+
+        <div class="fi" data-f="entrada" onclick="openFile('entrada')">
+          <span class="fi-type d">[DOC]</span>
+          <span class="fi-name">ENTRADA_FINAL.doc</span>
+        </div>
+
+        <div class="fi locked" title="sem permissão">
+          <span class="fi-type">[WAV]</span>
+          <span class="fi-name">SOM_AMBIENTE.wav</span>
+        </div>
+
+        <div class="fi corrupt" data-f="bin" onclick="openBin()">
+          <span class="fi-type e">[ENC]</span>
+          <span class="fi-name">███████████████.bin</span>
+        </div>
+
+        <div class="fi secret" id="fiSecret" data-f="nota" onclick="openFile('nota')">
+          <span class="fi-type d">[DOC]</span>
+          <span class="fi-name">NOTA_PESSOAL.doc</span>
+          <span class="fi-badge">novo</span>
+        </div>
+
+      </nav>
+    </aside>
+
+    <!-- viewer -->
+    <main class="viewer" id="viewer">
+      <div class="welcome" id="welcome">
+        <div class="welcome-ix">IX</div>
+        <p class="hi">acesso autorizado · fragmentos verificados: 13/13</p>
+        <p style="margin-top:10px;">selecione um arquivo para visualizar<span style="animation:blink .7s step-end infinite;color:var(--g4)">_</span></p>
+      </div>
+    </main>
+
   </div>
 
-  <!-- CARTA -->
-  <div class="reveal">
-    <div class="section-divider">
-      <span class="section-divider-mark">carta do arquivista · acesso liberado</span>
+  <!-- terminal footer -->
+  <footer class="t-foot">
+    <div class="t-out" id="tout"></div>
+    <div class="t-cmd">
+      <span class="t-prompt">atlas@ix:~$</span>
+      <input id="cmd" type="text" autocomplete="off" spellcheck="false" placeholder="digite um comando  (help para listar)">
     </div>
-
-    <div class="carta">
-      <div class="carta-header">[ documento selado — agora aberto ]</div>
-
-      <p class="destaque">O Arquivista não esperava que você chegasse até aqui.</p>
-
-      <p>Mas você chegou.<br>
-      E isso muda tudo.</p>
-
-      <p>Deixa eu te contar o que o Projeto IX realmente é.</p>
-
-      <p>Não é uma edição do jornal. Nunca foi.<br>
-      É o nome que dei para o espaço entre as coisas.<br>
-      Entre o oito e o dez. Entre o que foi publicado e o que ficou guardado.<br>
-      Entre o que o Atlas mostra, e o que ele carrega em silêncio.</p>
-
-      <p>Você percorreu esse espaço inteiro.</p>
-    </div>
-  </div>
-
-  <!-- PALAVRAS -->
-  <div class="reveal">
-    <div class="words-section">
-      <div class="words-header">palavras encontradas no percurso</div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">I</div>
-          <div class="word-key">OCULTO</div>
-        </div>
-        <div class="word-gloss">a mensagem que se esconde no que parece silêncio</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">II</div>
-          <div class="word-key">APAGADO</div>
-        </div>
-        <div class="word-gloss">a chave que estava escrita nas margens, esperando</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">III</div>
-          <div class="word-key">ONZE</div>
-        </div>
-        <div class="word-gloss">o número que o jornal nunca imprimiu</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">IV</div>
-          <div class="word-key">SENTINELA</div>
-        </div>
-        <div class="word-gloss">quem esperou na hora certa, no lugar certo</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">V</div>
-          <div class="word-key">ESPELHO</div>
-        </div>
-        <div class="word-gloss">o reflexo do projeto em si mesmo</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">VI</div>
-          <div class="word-key">CIFRADO</div>
-        </div>
-        <div class="word-gloss">o que o erro escondia, em hex, na margem</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">VII</div>
-          <div class="word-key">INTENCAO</div>
-        </div>
-        <div class="word-gloss">a nona intenção — o que originou tudo isso</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">VIII</div>
-          <div class="word-key">RASTRO</div>
-        </div>
-        <div class="word-gloss">o que o guardião das portas deixou nas margens</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">IX</div>
-          <div class="word-key">ABISMO</div>
-        </div>
-        <div class="word-gloss">o fundo da armadilha, que só quem olha encontra</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">X</div>
-          <div class="word-key">SINAL</div>
-        </div>
-        <div class="word-gloss">o que o servidor envia antes de qualquer página</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">XI</div>
-          <div class="word-key">MARCA</div>
-        </div>
-        <div class="word-gloss">o fragmento escondido no lugar mais visitado</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">XII</div>
-          <div class="word-key">ORIGEM</div>
-        </div>
-        <div class="word-gloss">a assinatura que quem construiu deixou para humanos</div>
-      </div>
-
-      <div class="word-row">
-        <div>
-          <div class="word-num">XIII</div>
-          <div class="word-key">LACUNA</div>
-        </div>
-        <div class="word-gloss">o fragmento sem endereço, no lugar que o número indica</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- FINAL DA CARTA -->
-  <div class="reveal">
-    <div class="carta">
-      <p>Treze palavras. Treze caminhos. Um arquivo.</p>
-
-      <p>O Atlas é uma comunidade.<br>
-      Mas é também um repositório de momentos que a maioria das comunidades deixa passar.<br>
-      As edições do jornal são registros.<br>
-      Os espaços entre elas, o que não foi dito, o que ficou entre os dias,<br>
-      são tão reais quanto qualquer palavra encontrada numa grade.</p>
-
-      <p>Você acabou de catalogar um desses momentos.</p>
-
-      <p class="destaque">O Projeto IX sempre existiu.<br>
-      Você só acabou de encontrá-lo.</p>
-
-      <p>Obrigado por procurar o que estava oculto.<br>
-      Obrigado por ler o que estava entre as linhas.<br>
-      Obrigado por ter chegado a tempo.</p>
-    </div>
-
-    <div class="carta-close">
-      <div class="carta-sig">— O Arquivista</div>
-      <div class="carta-date">[carta selada em 13/05/2026]</div>
-    </div>
-  </div>
-
-  <div class="page-footer">
-    <span class="footer-mark">Projeto IX &nbsp;·&nbsp; Jornal Atlas &nbsp;·&nbsp; 2026</span>
-    <a class="back-link" href="https://cacapalavras-atlas.vercel.app">← voltar ao jornal</a>
-  </div>
+  </footer>
 
 </div>
 
 <script>
-(function() {
-  'use strict';
-  const reveals = document.querySelectorAll('.reveal');
-  if (!('IntersectionObserver' in window)) {
-    reveals.forEach(el => el.classList.add('visible'));
-    return;
+(function(){
+'use strict';
+
+// ─── UTILS ───────────────────────────────────────────────────
+const $  = id => document.getElementById(id);
+const qs = s  => document.querySelector(s);
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ─── BOOT ────────────────────────────────────────────────────
+const BOOT = [
+  {t:'  ',s:0},{t:'',s:0},
+  {t:'    ╔═══════════════════════════════════════════╗',s:18,c:'hi'},
+  {t:'    ║   A T L A S  /  A R Q U I V O  v0.11.0  ║',s:18,c:'hi'},
+  {t:'    ╚═══════════════════════════════════════════╝',s:18,c:'hi'},
+  {t:'',s:0},
+  {t:'  Inicializando sistema de arquivos...',s:22},
+  {t:'  Verificando integridade dos fragmentos...',s:22},
+  {t:'  > FRAGMENTOS_VERIFICADOS  :  13 / 13  ✓',s:14,c:'ok'},
+  {t:'',s:0},
+  {t:'  Carregando credenciais de acesso...',s:22},
+  {t:'  > USUARIO    : visitante_autorizado',s:14,c:'dim'},
+  {t:'  > NIVEL      : IX / XIII',s:14,c:'dim'},
+  {t:'  > SESSAO     : ativa',s:14,c:'dim'},
+  {t:'',s:0},
+  {t:'  Descriptografando arquivos selecionados...',s:20},
+  {t:'  [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0%',s:0,id:'bar'},
+  {t:'',s:0},
+  {t:'─────────────────────────────────────────────────',s:12,c:'dim'},
+  {t:'  ACESSO CONCEDIDO.',s:18,c:'ok'},
+  {t:'  Bem-vindo ao Projeto IX.',s:18,c:'ok'},
+  {t:'',s:30},
+];
+
+let bootDone = false;
+const bootEl = $('boot');
+const pre    = $('bootPre');
+const appEl  = $('app');
+
+function launchApp(){
+  if(bootDone) return;
+  bootDone = true;
+  bootEl.style.transition = 'opacity .5s';
+  bootEl.style.opacity = '0';
+  setTimeout(()=>{ bootEl.style.display='none'; appEl.classList.remove('off'); $('cmd').focus(); }, 520);
+}
+$('bootSkip').addEventListener('click', launchApp);
+bootEl.addEventListener('click', launchApp);
+
+async function runBoot(){
+  let html = '';
+  const FILLS = ['░','▒','▓','█'];
+  for(let i=0;i<BOOT.length;i++){
+    if(bootDone) return;
+    const b = BOOT[i];
+    if(b.id === 'bar'){
+      // animate bar
+      for(let p=0;p<=100;p+=4){
+        if(bootDone) return;
+        const filled = Math.round(p/100*36);
+        const bar = '█'.repeat(filled) + '░'.repeat(36-filled);
+        const tmp = html + `<span class="${p===100?'ok':''}">[${bar}] ${p}%</span>\n`;
+        pre.innerHTML = tmp;
+        await sleep(28);
+      }
+      html += `<span class="ok">[████████████████████████████████████] 100%</span>\n`;
+    } else {
+      const line = b.c ? `<span class="${b.c}">${esc(b.t)}</span>` : esc(b.t);
+      html += line + '\n';
+      pre.innerHTML = html;
+    }
+    await sleep(b.s);
   }
-  const obs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        obs.unobserve(e.target);
+  await sleep(700);
+  launchApp();
+}
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+runBoot();
+
+// ─── FILES ───────────────────────────────────────────────────
+const WORDS = [
+  ['I',   'OCULTO',    'a mensagem que se esconde no que parece silêncio'],
+  ['II',  'APAGADO',   'a chave que estava escrita nas margens, esperando'],
+  ['III', 'ONZE',      'o número que o jornal nunca imprimiu'],
+  ['IV',  'SENTINELA', 'quem esperou na hora certa, no lugar certo'],
+  ['V',   'ESPELHO',   'o reflexo do projeto em si mesmo'],
+  ['VI',  'CIFRADO',   'o que o erro escondia, em hex, na margem'],
+  ['VII', 'INTENCAO',  'a nona intenção — o que originou tudo isso'],
+  ['VIII','RASTRO',    'o que o guardião das portas deixou nas margens'],
+  ['IX',  'ABISMO',    'o fundo da armadilha, que só quem olha encontra'],
+  ['X',   'SINAL',     'o que o servidor envia antes de qualquer página'],
+  ['XI',  'MARCA',     'o fragmento escondido no lugar mais visitado'],
+  ['XII', 'ORIGEM',    'a assinatura que quem construiu deixou para humanos'],
+  ['XIII','LACUNA',    'o fragmento sem endereço, no lugar que o número indica'],
+];
+
+const DECRYPT = {
+  OCULTO:   'fragmento I — encontrado no espectrograma. o silêncio tinha forma.',
+  APAGADO:  'fragmento II — acrosstico nas margens do arquivo. sete letras, sete frases.',
+  ONZE:     'fragmento III — o número que o jornal recusou imprimir. existe em /11.',
+  SENTINELA:'fragmento IV — chegou às 23:05 e saiu às 23:16. exato.',
+  ESPELHO:  'fragmento V — estava lá desde o início, a 18% de opacidade.',
+  CIFRADO:  'fragmento VI — 63 69 66 72 61 64 6f. o erro guardava uma mensagem.',
+  INTENCAO: 'fragmento VII — aquilo que precede qualquer projeto. estava no arquivo.',
+  RASTRO:   'fragmento VIII — base64 no robots.txt. o guardião das portas.',
+  ABISMO:   'fragmento IX — cifrado com a mesma chave do fragmento II. bom trabalho.',
+  SINAL:    'fragmento X — X-Atlas-Sinal. o servidor fala antes de carregar.',
+  MARCA:    'fragmento XI — 4D 41 52 43 41. estava no próprio jornal, o tempo todo.',
+  ORIGEM:   'fragmento XII — humans.txt. primeiras letras de cada linha.',
+  LACUNA:   'fragmento XIII — LPCAND. a porta era o número do projeto.',
+};
+
+// ─── FILE STATE ───────────────────────────────────────────────
+const opened = new Set();
+
+function updateCount(){
+  const docs = ['carta','palavras','registro','entrada'];
+  const n = docs.filter(k=>opened.has(k)).length;
+  $('fc').textContent = n + ' / 4 abertos';
+  if(n >= 4) setTimeout(unlockSecret, 1200);
+}
+
+function unlockSecret(){
+  const el = $('fiSecret');
+  if(!el.classList.contains('show')){
+    el.classList.add('show');
+    tprint('── arquivo desbloqueado → NOTA_PESSOAL.doc ──','ok');
+  }
+}
+
+// ─── VIEWER ──────────────────────────────────────────────────
+function openFile(key){
+  const v = $('viewer');
+  v.innerHTML = '';
+  // activate sidebar item
+  document.querySelectorAll('.fi').forEach(el=>el.classList.remove('active'));
+  const fi = qs(`.fi[data-f="${key}"]`);
+  if(fi){ fi.classList.add('active'); const b=fi.querySelector('.fi-badge'); if(b)b.remove(); }
+
+  opened.add(key);
+  updateCount();
+
+  const div = document.createElement('div');
+  div.className = 'dv';
+  div.innerHTML = buildContent(key);
+  v.appendChild(div);
+
+  // redacted handlers
+  div.querySelectorAll('.rx').forEach(el=>{
+    el.addEventListener('click',()=>{
+      if(!el.classList.contains('open')){
+        el.classList.add('open');
+        tprint('fragmento classificado revelado.','dim');
       }
     });
-  }, { threshold: 0.08 });
-  reveals.forEach(el => obs.observe(el));
+  });
+  v.scrollTop = 0;
+}
+
+function buildContent(key){
+  const headers = {
+    carta:   ['CARTA_DO_ARQUIVISTA.doc',   'DOCUMENTO · CLASSIFICADO · ATLAS/IX','Criado: 13/05/2026 · Selado: 23:11'],
+    palavras:['PALAVRAS_ENCONTRADAS.log',  'SISTEMA LOG · ATLAS/IX','Gerado: 13/05/2026 23:11:55'],
+    registro:['REGISTRO_IX.doc',           'DOCUMENTO · RESTRITO · ATLAS/IX','Última modificação: 13/05/2026'],
+    entrada: ['ENTRADA_FINAL.doc',         'DOCUMENTO · ARQUIVO · ATLAS/IX','Selado: 13/05/2026 23:11'],
+    nota:    ['NOTA_PESSOAL.doc',          'NÃO CLASSIFICADO · PESSOAL','Encontrado: agora'],
+  };
+  const h = headers[key]||[key,'',''];
+
+  const head = `<div class="dv-head">
+    <span class="dv-title">${h[0]}</span>
+    <span class="dv-meta">${h[1]}<br>${h[2]}</span>
+  </div>`;
+
+  if(key==='palavras') return head + logHTML();
+  return head + paperHTML(key);
+}
+
+function logHTML(){
+  let s = '<div class="lc">';
+  s += '<span class="sep">── iniciando verificação de fragmentos ──</span>';
+  WORDS.forEach(([num,word,gloss],i)=>{
+    const ts = `2026-05-13 23:11:${(42+i).toString().padStart(2,'0')}`;
+    s += `<div>[<span class="ts">${ts}</span>]  <span class="key">FRAGMENTO_${num}</span>  <span class="val">${word}</span>   <span class="chk">✓ VERIFICADO</span></div>`;
+  });
+  s += '<span class="sep">────────────────────────────────────────</span>';
+  s += '<div class="fin">── 13 / 13 fragmentos verificados</div>';
+  s += '<div class="fin">── PROJETO IX : ACESSO COMPLETO</div>';
+  s += '</div>';
+  return s;
+}
+
+const PAPERS = {
+  carta: {stamp:'Confidencial', body:`
+    <div class="paper-lbl">[ carta do arquivista — acesso liberado ]</div>
+    <p class="lead">O Arquivista não esperava que você chegasse até aqui.</p>
+    <p>Mas você chegou.<br>E isso muda tudo.</p>
+    <p>Deixa eu te contar o que o Projeto IX realmente é.</p>
+    <p>Não é uma edição do jornal. Nunca foi.<br>
+    É o nome que dei para o espaço entre as coisas.<br>
+    Entre o oito e o dez. Entre o que foi publicado e o que ficou guardado.<br>
+    Entre o que o Atlas mostra, e o que ele carrega em silêncio.</p>
+    <p>Você percorreu esse espaço inteiro.<br>
+    Treze palavras. Treze caminhos.<br>
+    Cada uma em um lugar diferente — alguns óbvios, a maioria não.</p>
+    <p>O Atlas é uma comunidade.<br>
+    Mas é também um repositório de momentos que a maioria das comunidades deixa passar.<br>
+    As edições do jornal são registros.<br>
+    Os espaços entre elas — o que não foi dito, o que ficou entre os dias —<br>
+    são tão reais quanto qualquer palavra encontrada numa grade.</p>
+    <p>Você acabou de catalogar um desses momentos.</p>
+    <p><strong>O Projeto IX sempre existiu.<br>Você só acabou de encontrá-lo.</strong></p>
+    <p>Obrigado por procurar o que estava oculto.<br>
+    Obrigado por ler o que estava entre as linhas.<br>
+    Obrigado por ter chegado a tempo.</p>
+    <div class="paper-sig">— O Arquivista</div>
+    <div class="paper-date">[carta selada em 13/05/2026 · 23:11]</div>
+  `},
+  registro: {stamp:'Restrito', body:`
+    <div class="paper-lbl">[ atlas/registro — projeto ix ]</div>
+    <div class="paper-ttl">Sobre a Origem</div>
+    <p>O Projeto IX foi concebido antes da primeira edição.<br>
+    Não como conteúdo. Como intenção.</p>
+    <p>Nove era o número escolhido.<br>
+    Nove nunca chegou — pelo menos, não da forma esperada.</p>
+    <p>O que foi construído em seu lugar não tem nome nos registros oficiais.<br>
+    Tem apenas uma série de entradas espalhadas,<br>
+    esperando quem soubesse procurar.</p>
+    <p>O primeiro fragmento escondido foi <span class="rx">████ OCULTO ████ no arquivo de áudio</span>.<br>
+    O último foi <span class="rx">████ LACUNA ████ na porta que o número indica</span>.</p>
+    <p>Entre eles: treze caminhos, treze respostas,<br>
+    e um arquivo que só se abre quando todos chegam.</p>
+    <p>O Arquivista sabe onde cada um está.<br>
+    O Arquivista sempre soube.</p>
+    <div class="paper-sig">— Registro encerrado</div>
+    <div class="paper-date">[documento incompleto · seção 2 suprimida]</div>
+  `},
+  entrada: {stamp:'Selado', body:`
+    <div class="paper-lbl">[ atlas/arquivo — entrada final ]</div>
+    <div class="paper-ttl">O Fim do Percurso</div>
+    <p>O Atlas não é um servidor.<br>
+    É um repositório de momentos.</p>
+    <p>O Projeto IX existe.<br>
+    Não como nona edição.<br>
+    Como aquilo que precede qualquer projeto.<br>
+    Uma palavra. Está em toda parte.</p>
+    <p>Essa entrada é a última.<br>
+    Não porque o arquivo acabou —<br>
+    mas porque você chegou onde o arquivo começa.</p>
+    <p>A carta completa estava aqui.<br>
+    Agora que você a leu,<br>
+    o arquivo pode ser selado novamente.</p>
+    <p><em>Até o próximo que souber procurar.</em></p>
+    <div class="paper-sig">— O Arquivista</div>
+    <div class="paper-date">[entrada selada em 13/05/2026]</div>
+  `},
+  nota: {stamp:null, body:`
+    <div class="paper-lbl">[ nota pessoal — não classificada ]</div>
+    <div class="paper-ttl">Para Quem Chegou Até Aqui</div>
+    <p>Não era para ter uma nota pessoal.<br>
+    Mas você abriu tudo. Então merece isso.</p>
+    <p>Eu não sei quem você é.<br>
+    Mas sei que você é o tipo de pessoa que para.<br>
+    Que lê o código-fonte das páginas.<br>
+    Que decodifica hex às três da manhã.<br>
+    Que volta ao site às 23:05 só pra ver se acontece algo diferente.</p>
+    <p>Esse projeto foi feito para você.<br>
+    Especificamente.</p>
+    <p>O Atlas existe porque existe gente que acredita<br>
+    que os espaços entre as coisas importam tanto quanto as coisas em si.<br>
+    Você acabou de provar que essa gente existe.</p>
+    <p>Obrigado por jogar.</p>
+    <div class="paper-sig">— O Arquivista<br><em style="font-style:italic;opacity:.7">(desta vez, sem a máscara)</em></div>
+    <div class="paper-date">[nota encontrada em: agora]</div>
+  `},
+};
+
+function paperHTML(key){
+  const p = PAPERS[key];
+  if(!p) return '';
+  const stamp = p.stamp ? `<div class="stamp">${p.stamp}</div>` : '';
+  return `<div class="pw"><div class="paper">${stamp}${p.body}</div></div>`;
+}
+
+// ─── CORRUPTED FILE ──────────────────────────────────────────
+let binBusy = false;
+const GLITCH_MSGS = [
+  'EU AINDA ESTOU AQUI',
+  'NÃO LEIA ISSO',
+  'O ARQUIVO NÃO ESTÁ VAZIO',
+  'VOCÊ NÃO DEVERIA TER ABERTO',
+];
+function openBin(){
+  if(binBusy) return;
+  binBusy = true;
+  const overlay = $('glitchOverlay');
+  const app     = $('app');
+  app.classList.add('glitching');
+  overlay.textContent = GLITCH_MSGS[Math.floor(Math.random()*GLITCH_MSGS.length)];
+  overlay.style.opacity = '.9';
+  setTimeout(()=>{
+    overlay.style.transition = 'opacity .12s';
+    overlay.style.opacity = '0';
+    app.classList.remove('glitching');
+    tprint('> arquivo corrompido — leitura impossível.','err');
+    tprint('> fragmento de dados detectado. conteúdo ilegível.','dim');
+    setTimeout(()=>{ binBusy = false; overlay.style.transition = ''; },300);
+  }, 320);
+}
+
+// ─── TERMINAL ────────────────────────────────────────────────
+function tprint(msg, cls=''){
+  const out = $('tout');
+  const d = document.createElement('div');
+  d.className = 'tl' + (cls?' '+cls:'');
+  d.textContent = msg;
+  out.appendChild(d);
+  out.scrollTop = out.scrollHeight;
+}
+
+const CMDS = {
+  help(){
+    tprint('comandos disponíveis:','ok');
+    tprint('  ls              — lista arquivos do sistema','dim');
+    tprint('  whoami          — identificação do usuário','dim');
+    tprint('  status          — status da sessão','dim');
+    tprint('  decrypt [word]  — verifica um fragmento','dim');
+    tprint('  cat [arquivo]   — abre um arquivo','dim');
+    tprint('  ping            — testa conexão com o Arquivista','dim');
+    tprint('  clear           — limpa o terminal','dim');
+  },
+  ls(){
+    tprint('── /projeto/ix/raiz ──','dim');
+    tprint('  [DOC]  CARTA_ARQUIVISTA.doc','ok');
+    tprint('  [LOG]  PALAVRAS_ENCONTRADAS.log','ok');
+    tprint('  [DOC]  REGISTRO_IX.doc','ok');
+    tprint('  [DOC]  ENTRADA_FINAL.doc','ok');
+    tprint('  [WAV]  SOM_AMBIENTE.wav       [sem permissão]','err');
+    tprint('  [ENC]  ███████████████.bin    [corrompido]','err');
+    if($('fiSecret').classList.contains('show'))
+      tprint('  [DOC]  NOTA_PESSOAL.doc       [novo]','ok');
+  },
+  whoami(){
+    tprint('visitante_autorizado','ok');
+    tprint('nível de acesso : ix/xiii','dim');
+    tprint('fragmentos      : 13/13','dim');
+  },
+  status(){
+    const docs = ['carta','palavras','registro','entrada'];
+    const n = docs.filter(k=>opened.has(k)).length;
+    tprint(`arquivos abertos   : ${n}/4`,n>=4?'ok':'dim');
+    tprint('sessão             : ativa','ok');
+    if(n>=4) tprint('arquivo secreto    : desbloqueado','ok');
+  },
+  ping(){
+    tprint('enviando sinal para o Arquivista...','dim');
+    setTimeout(()=>tprint('nenhuma resposta.','err'),500);
+    setTimeout(()=>tprint('mas o arquivo permanece aberto.','dim'),900);
+  },
+  clear(){ $('tout').innerHTML=''; },
+};
+
+const CAT_MAP = {
+  'carta_arquivista.doc':'carta',
+  'carta':'carta',
+  'palavras_encontradas.log':'palavras',
+  'palavras':'palavras',
+  'registro_ix.doc':'registro',
+  'registro':'registro',
+  'entrada_final.doc':'entrada',
+  'entrada':'entrada',
+  'nota_pessoal.doc':'nota',
+  'nota':'nota',
+};
+
+$('cmd').addEventListener('keydown', function(e){
+  if(e.key!=='Enter') return;
+  const raw = this.value.trim();
+  if(!raw) return;
+  this.value = '';
+  tprint('$ '+raw,'inp');
+
+  const parts = raw.toLowerCase().split(/\s+/);
+  const cmd = parts[0];
+  const arg = parts.slice(1).join(' ');
+  const argUp = arg.toUpperCase();
+
+  if(cmd==='decrypt'){
+    if(!arg){ tprint('uso: decrypt [palavra]','err'); return; }
+    if(DECRYPT[argUp]){ tprint(DECRYPT[argUp],'ok'); }
+    else { tprint(`"${argUp}" — fragmento não reconhecido.`,'err'); }
+  } else if(cmd==='cat'){
+    const key = CAT_MAP[arg.replace(/\s+/g,'_')];
+    if(key){ openFile(key); tprint(`abrindo ${arg}...`,'dim'); }
+    else { tprint(`"${arg}": arquivo não encontrado.`,'err'); }
+  } else if(CMDS[cmd]){
+    CMDS[cmd]();
+  } else if(cmd==='atlas'){
+    tprint('o atlas foi construído por quem ficou.','ok');
+  } else if(cmd==='ix' || cmd==='projeto'){
+    tprint('você já está dentro dele.','ok');
+  } else {
+    tprint(`"${cmd}": comando não reconhecido. tente: help`,'err');
+  }
+});
+
 })();
 </script>
 </body>
