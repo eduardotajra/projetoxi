@@ -91,18 +91,20 @@ echo.
 timeout /t 3 /nobreak >nul
 echo   [ pressione qualquer tecla ] | findstr /a:08 "."
 pause >nul
+cls
+echo.
+echo   ATLAS OS . TERMINAL | findstr /a:0B "."
+echo   ========================================================= | findstr /a:08 "."
+echo   arquivista@atlas:/raiz  --  digite: ajuda | findstr /a:08 "."
+echo   ========================================================= | findstr /a:08 "."
+echo.
 
 :: ============================
 ::  TERMINAL LOOP
 :: ============================
 :TERMINAL
-cls
 echo.
-echo   ATLAS OS . TERMINAL | findstr /a:0B "."
-echo   ========================================================= | findstr /a:08 "."
 echo   arquivista@atlas:/!CWD! | findstr /a:0F "."
-echo   ========================================================= | findstr /a:08 "."
-echo.
 set "VERB="
 set "ARG1=_"
 set /p "CMD=   $ "
